@@ -1,0 +1,282 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --color-sidebar: #1e1b4b;
+  --color-sidebar-border: #2e2a72;
+  --color-sidebar-active: #4338ca;
+  --color-brand: #4338ca;
+  --color-brand-hover: #3730a3;
+  --radius-square: 2px;
+}
+
+/* ========================================================
+   GLOBAL BASE (TAILWIND POSTCSS)
+   ======================================================== */
+html, body, #root {
+  @apply font-sans bg-[#f4f6f9] text-slate-900 antialiased w-full;
+  min-height: 100vh;
+  line-height: 1.5;
+  overflow-x: clip;
+}
+
+/* Precision Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-slate-100;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400;
+}
+
+/* ========================================================
+   TAILWIND COMPONENTS (@apply ONLY)
+   ======================================================== */
+@layer components {
+  /* Square Corporate Cards */
+  .classic-card {
+    @apply bg-white border border-slate-300 p-4 mb-4 rounded-[2px] shadow-2xs;
+  }
+
+  .card-topbar {
+    @apply flex items-center justify-between mb-3.5 flex-wrap gap-2;
+  }
+
+  .card-topbar h3 {
+    @apply text-[15px] font-bold text-slate-900;
+  }
+
+  .card-topbar p {
+    @apply text-xs text-slate-500;
+  }
+
+  /* Excel Spreadsheet Grid Lining */
+  .table-container {
+    @apply w-full overflow-x-auto border border-slate-300 rounded-[2px] bg-white;
+  }
+
+  .data-table {
+    @apply w-full border-collapse text-left text-xs min-w-[650px];
+  }
+
+  .data-table th {
+    @apply bg-slate-100 text-slate-600 font-bold text-[11px] uppercase tracking-wider py-2.5 px-3 border border-slate-300 whitespace-nowrap;
+  }
+
+  .data-table td {
+    @apply py-2.5 px-3 border border-slate-200 text-slate-900 align-middle text-xs;
+  }
+
+  .data-table tr:hover td {
+    @apply bg-slate-50;
+  }
+
+  .data-table tr:nth-child(even) td {
+    @apply bg-[#fbfcfe];
+  }
+
+  .data-table tr:nth-child(even):hover td {
+    @apply bg-slate-100;
+  }
+
+  /* Square Badges */
+  .badge-pill {
+    @apply inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[11px] font-semibold whitespace-nowrap border;
+  }
+
+  .badge-green {
+    @apply bg-emerald-50 text-emerald-800 border-emerald-300;
+  }
+
+  .badge-yellow {
+    @apply bg-amber-50 text-amber-800 border-amber-300;
+  }
+
+  .badge-red {
+    @apply bg-rose-50 text-rose-800 border-rose-300;
+  }
+
+  .badge-blue {
+    @apply bg-blue-50 text-blue-800 border-blue-300;
+  }
+
+  .badge-purple {
+    @apply bg-indigo-50 text-indigo-800 border-indigo-300;
+  }
+
+  .badge-gray {
+    @apply bg-slate-100 text-slate-700 border-slate-300;
+  }
+
+  /* Strict Square Buttons */
+  .btn-classic {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] text-xs font-medium cursor-pointer transition-all border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 min-h-[30px];
+  }
+
+  .btn-primary-purple {
+    @apply bg-indigo-700 text-white border-indigo-800 hover:bg-indigo-800;
+  }
+
+  .btn-outline {
+    @apply bg-white border border-slate-300 text-slate-700 hover:bg-slate-50;
+  }
+
+  .btn-danger {
+    @apply bg-rose-600 text-white border-rose-700 hover:bg-rose-700;
+  }
+
+  .btn-success {
+    @apply bg-emerald-600 text-white border-emerald-700 hover:bg-emerald-700;
+  }
+
+  .btn-table-action {
+    @apply text-xs px-2 py-1 rounded-[2px] border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 cursor-pointer font-medium;
+  }
+
+  /* Metric Cards Grid */
+  .metrics-grid-4,
+  .metrics-row {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4;
+  }
+
+  .metric-card,
+  .metric-box {
+    @apply bg-white border border-slate-300 p-4 rounded-[2px] flex flex-col justify-between shadow-2xs transition-all hover:border-slate-400;
+  }
+
+  .metric-header {
+    @apply flex items-center justify-between mb-2;
+  }
+
+  .metric-label {
+    @apply text-xs font-semibold text-slate-500 uppercase tracking-wider;
+  }
+
+  .metric-icon-box,
+  .metric-icon-bubble {
+    @apply w-8 h-8 rounded-[2px] flex items-center justify-center shrink-0 border border-slate-200;
+  }
+
+  .metric-num,
+  .metric-number {
+    @apply text-2xl font-bold text-slate-900 tracking-tight leading-tight my-0.5;
+  }
+
+  .metric-sub {
+    @apply text-[11px] text-slate-500 mt-1 flex items-center gap-1;
+  }
+
+  .trend-green {
+    @apply text-emerald-600 font-semibold inline-flex items-center gap-0.5;
+  }
+
+  .trend-amber {
+    @apply text-amber-600 font-semibold inline-flex items-center gap-0.5;
+  }
+
+  .trend-red {
+    @apply text-rose-600 font-semibold inline-flex items-center gap-0.5;
+  }
+
+  /* Filters, Search Toolbars & Tab Bars */
+  .filter-bar,
+  .filter-toolbar {
+    @apply flex items-center justify-between gap-3 mb-3.5 flex-wrap;
+  }
+
+  .search-input-box {
+    @apply bg-white border border-slate-300 rounded-[2px] py-1.5 px-3 text-xs text-slate-900 outline-none transition-all focus:border-indigo-700 focus:ring-1 focus:ring-indigo-700;
+  }
+
+  .search-input-wrap {
+    @apply relative flex items-center;
+  }
+
+  .search-input-wrap .search-icon {
+    @apply absolute left-2.5 text-slate-400 pointer-events-none;
+  }
+
+  .search-input-wrap input {
+    @apply w-full bg-white border border-slate-300 rounded-[2px] py-1.5 pr-3 pl-8 text-xs text-slate-900 outline-none transition-all focus:border-indigo-700 focus:ring-1 focus:ring-indigo-700;
+  }
+
+  .filter-select,
+  .filter-select-input {
+    @apply bg-white border border-slate-300 rounded-[2px] py-1.5 px-2.5 text-xs text-slate-900 outline-none cursor-pointer;
+  }
+
+  .table-actions {
+    @apply flex items-center gap-1.5;
+  }
+
+  .btn-icon-sm {
+    @apply w-7 h-7 flex items-center justify-center bg-white border border-slate-300 rounded-[2px] text-slate-700 hover:bg-slate-50 hover:text-indigo-700 hover:border-slate-400 cursor-pointer transition-all;
+  }
+
+  /* Tabs */
+  .tab-nav {
+    @apply flex items-center gap-1 border-b border-slate-300 mb-4 overflow-x-auto;
+  }
+
+  .tab-nav-btn {
+    @apply py-2 px-3 text-xs font-medium text-slate-600 border-b-2 border-transparent bg-transparent cursor-pointer whitespace-nowrap transition-colors hover:text-indigo-700;
+  }
+
+  .tab-nav-btn.active {
+    @apply text-indigo-700 border-indigo-700 font-bold;
+  }
+
+  .classic-tabbar {
+    @apply inline-flex items-center gap-1 p-1 bg-slate-200/70 border border-slate-300 rounded-[2px] mb-3;
+  }
+
+  .tab-btn-pill {
+    @apply px-3 py-1 text-xs font-medium text-slate-600 rounded-[2px] transition-all cursor-pointer border border-transparent bg-transparent hover:text-slate-900;
+  }
+
+  .tab-btn-pill.active {
+    @apply bg-white text-indigo-700 font-bold shadow-xs border-slate-300;
+  }
+
+  /* Modals */
+  .modal-overlay {
+    @apply fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4;
+  }
+
+  .modal-container {
+    @apply bg-white border border-slate-300 rounded-[2px] shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden;
+  }
+
+  .modal-header {
+    @apply p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-sm font-bold text-slate-900;
+  }
+
+  .modal-body {
+    @apply p-5 overflow-y-auto flex-1 text-xs text-slate-700;
+  }
+
+  .modal-footer {
+    @apply p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2;
+  }
+}
+
+/* SweetAlert2 Square Theme */
+div.swal2-popup {
+  border-radius: 2px !important;
+  border: 1px solid #cbd5e1 !important;
+  font-family: var(--font-sans) !important;
+}
+
+button.swal2-styled {
+  border-radius: 2px !important;
+  padding: 7px 16px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+}
