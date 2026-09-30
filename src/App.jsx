@@ -41,9 +41,7 @@ export default function App() {
   const [activeModule, setActiveModule] = useState('dashboard');
   const [activeSubPage, setActiveSubPage] = useState('overview');
   const [expandedModules, setExpandedModules] = useState({
-    dashboard: true,
-    properties: true,
-    owners: true
+    dashboard: true
   });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -82,25 +80,21 @@ export default function App() {
     }
   };
 
-  // Accordion Toggle
+  // Accordion Toggle: Single accordion mode (closes other modules automatically)
   const handleToggleExpand = (moduleId) => {
     setExpandedModules(prev => {
-      const isCurrentlyExpanded = prev[moduleId] !== undefined ? prev[moduleId] : (activeModule === moduleId);
-      return {
-        ...prev,
-        [moduleId]: !isCurrentlyExpanded
-      };
+      const isCurrentlyExpanded = Boolean(prev[moduleId]);
+      return isCurrentlyExpanded ? {} : { [moduleId]: true };
     });
   };
 
-  // Router navigation
+  // Router navigation: expands the target module and collapses all other modules
   const handleNavigate = (moduleId, subPageId) => {
     setActiveModule(moduleId);
     setActiveSubPage(subPageId);
-    setExpandedModules(prev => ({
-      ...prev,
+    setExpandedModules({
       [moduleId]: true
-    }));
+    });
   };
 
   // Property Handlers

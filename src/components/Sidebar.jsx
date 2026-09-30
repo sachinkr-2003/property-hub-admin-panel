@@ -232,7 +232,7 @@ export default function Sidebar({
         {menuConfig.map((item) => {
           const Icon = item.icon;
           const isModuleActive = activeModule === item.id;
-          const isExpanded = expandedModules[item.id] !== undefined ? expandedModules[item.id] : isModuleActive;
+          const isExpanded = Boolean(expandedModules[item.id]);
 
           return (
             <div key={item.id} style={{ display: 'flex', flexDirection: 'column' }}>
@@ -279,7 +279,7 @@ export default function Sidebar({
                       >
                         <ChevronRight 
                           size={14} 
-                          className={`transition-transform duration-150 text-slate-400 ${isExpanded ? 'rotate-90 text-white' : ''}`} 
+                          className={`transition-transform duration-200 text-slate-400 ${isExpanded ? 'rotate-90 text-white' : ''}`} 
                         />
                       </span>
                     )}
@@ -289,14 +289,14 @@ export default function Sidebar({
 
               {/* Accordion Sub-pages dropdown */}
               {!isCollapsed && isExpanded && item.subPages && item.subPages.length > 0 && (
-                <div className="flex flex-col gap-0.5 pl-3 my-1 border-l-2 border-white/15 ml-4.5">
+                <div className="flex flex-col gap-0.5 pl-3 my-1 border-l-2 border-indigo-400/40 ml-4.5 accordion-submenu">
                   {item.subPages.map((sub) => {
                     const isSubActive = isModuleActive && activeSubPage === sub.id;
                     return (
                       <button
                         type="button"
                         key={sub.id}
-                        className={`flex items-center justify-between w-full py-1.5 px-2 rounded-[2px] text-xs cursor-pointer text-left transition-colors ${isSubActive ? 'text-white bg-indigo-500/25 font-semibold' : 'text-slate-400 bg-transparent hover:text-white hover:bg-white/5'}`}
+                        className={`flex items-center justify-between w-full py-1.5 px-2 rounded-[2px] text-xs cursor-pointer text-left transition-colors duration-150 ${isSubActive ? 'text-white bg-indigo-500/25 font-semibold' : 'text-slate-400 bg-transparent hover:text-white hover:bg-white/5'}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           onNavigate(item.id, sub.id);
