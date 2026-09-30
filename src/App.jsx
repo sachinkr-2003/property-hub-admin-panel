@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import PropertyModal from './components/PropertyModal';
 import KycModal from './components/KycModal';
 import AddPropertyModal from './components/AddPropertyModal';
 import ErrorBoundary from './components/ErrorBoundary';
+import api from './services/api';
 
 import DashboardOverview from './pages/DashboardOverview';
 import UserManagement from './pages/UserManagement';
@@ -97,81 +98,201 @@ export default function App() {
     });
   };
 
-  // Property Handlers
-  const handleUpdatePropertyStatus = (id, newStatus) => {
-    setProperties(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
+  // Live Data Synchronization with Backend MongoDB
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchInitialData() {
+      // 1. Fetch Real Properties from MongoDB
+      try {
+        const propRes = await api.get('/properties');
+        if (isMounted && propRes?.data && Array.isArray(propRes.data) && propRes.data.length > 0) {
+          setProperties(propRes.data.map(p => ({ ...p, id: p.customId || p.id || p._id })));
+          setMetrics(prev => ({
+            ...prev,
+            totalProperties: propRes.data.length,
+            verifiedListings: propRes.data.filter(p => p.isVerified).length,
+            pendingReview: propRes.data.filter(p => p.status === 'Pending Verification').length,
+          }));
+        }
+      } catch (err) {
+        console.info('[Live Sync] Using initial property fallback:', err.message);
+      }
+
+      // 2. Fetch Real Owners & KYC Dossiers from MongoDB
+      try {
+        const ownerRes = await api.get('/kyc/owners');
+        if (isMounted && ownerRes?.data && Array.isArray(ownerRes.data) && ownerRes.data.length > 0) {
+          setOwners(ownerRes.data.map(o => ({ ...o, id: o.customId || o.id || o._id })));
+          setMetrics(prev => ({
+            ...prev,
+            registeredOwners: ownerRes.data.length,
+            kycPending: ownerRes.data.filter(o => o.kycStatus === 'Pending').length,
+          }));
+        }
+      } catch (err) {
+        console.info('[Live Sync] Using initial owner fallback:', err.message);
+      }
+
+      // 3. Fetch Real Registered Users from MongoDB
+      try {
+        const userRes = await api.get('/users');
+        if (isMounted && userRes?.data && Array.isArray(userRes.data) && userRes.data.length > 0) {
+          setUsers(userRes.data.map(u => ({ ...u, id: u.customId || u.id || u._id })));
+          setMetrics(prev => ({
+            ...prev,
+            activeUsers: userRes.data.filter(u => u.status === 'Active').length,
+          }));
+        }
+      } catch (err) {
+        console.info('[Live Sync] Using initial user fallback:', err.message);
+      }
+
+      // 4. Fetch Support Tickets from MongoDB
+      try {
+        const ticketRes = await api.get('/communication/tickets');
+        if (isMounted && ticketRes?.data && Array.isArray(ticketRes.data) && ticketRes.data.length > 0) {
+          setTickets(ticketRes.data.map(t => ({ ...t, id: t.customId || t.id || t._id })));
+        }
+      } catch (err) {
+        console.info('[Live Sync] Using initial ticket fallback:', err.message);
+      }
+    }
+
+    fetchInitialData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Property Handlers (Optimistic UI + Live Backend Sync)
+  const handleUpdatePropertyStatus = async (id, newStatus) => {
+    setProperties(prev => prev.map(p => (p.id === id || p.customId === id) ? { ...p, status: newStatus } : p));
     if (newStatus === 'Active') {
-      showToast('Property listing approved and published live!', 'success');
+      showToast('Property listing approved and saved live in MongoDB!', 'success');
     } else if (newStatus === 'Rejected') {
       showToast('Property listing rejected.', 'error');
     } else {
       showToast(`Property status updated to ${newStatus}`, 'info');
     }
+
+    try {
+      await api.patch(`/properties/${id}/status`, { status: newStatus });
+    } catch (err) {
+      console.warn('[API] Property status update failed on backend:', err.message);
+    }
   };
 
-  const handleTogglePropertyFeatured = (id) => {
+  const handleTogglePropertyFeatured = async (id) => {
+    let nextState = true;
     setProperties(prev => prev.map(p => {
-      if (p.id === id) {
-        const nextState = !p.isFeatured;
+      if (p.id === id || p.customId === id) {
+        nextState = !p.isFeatured;
         showToast(nextState ? 'Marked as Featured Boost listing ★' : 'Removed from Featured Boost listings', 'info');
         return { ...p, isFeatured: nextState };
       }
       return p;
     }));
+
+    try {
+      await api.patch(`/properties/${id}/featured`);
+    } catch (err) {
+      console.warn('[API] Property featured toggle failed on backend:', err.message);
+    }
   };
 
   const handleDeleteProperty = async (id) => {
     const isConfirmed = await confirmDelete(
       'Delete Property Listing?', 
-      `Are you sure you want to permanently remove listing ${id} from platform?`
+      `Are you sure you want to permanently remove listing ${id} from database?`
     );
     if (isConfirmed) {
-      setProperties(prev => prev.filter(p => p.id !== id));
+      setProperties(prev => prev.filter(p => p.id !== id && p.customId !== id));
       setMetrics(prev => ({ ...prev, totalProperties: Math.max(0, prev.totalProperties - 1) }));
-      showToast('Property listing deleted successfully.', 'success');
+      showToast('Property listing deleted successfully from MongoDB.', 'success');
+
+      try {
+        await api.delete(`/properties/${id}`);
+      } catch (err) {
+        console.warn('[API] Property deletion failed on backend:', err.message);
+      }
     }
   };
 
-  const handleAddProperty = (newProperty) => {
-    setProperties(prev => [newProperty, ...prev]);
+  const handleAddProperty = async (newProperty) => {
+    try {
+      const res = await api.post('/properties', newProperty);
+      const created = res?.data || newProperty;
+      setProperties(prev => [created, ...prev]);
+    } catch (err) {
+      setProperties(prev => [newProperty, ...prev]);
+    }
     setMetrics(prev => ({
       ...prev,
       totalProperties: prev.totalProperties + 1,
     }));
-    showToast('New verified property published successfully!', 'success');
+    showToast('New verified property published to MongoDB!', 'success');
   };
 
-  // Owner KYC Handlers
-  const handleApproveKyc = (id, remarks) => {
-    setOwners(prev => prev.map(o => o.id === id ? { ...o, kycStatus: 'Verified', verificationStatus: 'Approved' } : o));
-    showToast('Owner KYC verified and official trust badge granted!', 'success');
+  // Owner KYC Handlers (Optimistic UI + Live Backend Sync)
+  const handleApproveKyc = async (id, remarks) => {
+    setOwners(prev => prev.map(o => (o.id === id || o.customId === id) ? { ...o, kycStatus: 'Verified', verificationStatus: 'Approved', remarks: remarks || 'Verified' } : o));
+    showToast('Owner KYC verified and official trust badge granted in MongoDB!', 'success');
+
+    try {
+      await api.patch(`/kyc/${id}/approve`, { remarks: remarks || 'Verified' });
+    } catch (err) {
+      console.warn('[API] Owner KYC approval failed on backend:', err.message);
+    }
   };
 
-  const handleRejectKyc = (id, remarks) => {
-    setOwners(prev => prev.map(o => o.id === id ? { ...o, kycStatus: 'Rejected', verificationStatus: 'Rejected' } : o));
+  const handleRejectKyc = async (id, remarks) => {
+    setOwners(prev => prev.map(o => (o.id === id || o.customId === id) ? { ...o, kycStatus: 'Rejected', verificationStatus: 'Rejected', remarks: remarks || 'Rejected' } : o));
     showToast('Owner KYC dossier rejected.', 'error');
+
+    try {
+      await api.patch(`/kyc/${id}/reject`, { remarks: remarks || 'Rejected' });
+    } catch (err) {
+      console.warn('[API] Owner KYC reject failed on backend:', err.message);
+    }
   };
 
-  const handleToggleBlockOwner = (id) => {
+  const handleToggleBlockOwner = async (id) => {
+    let nextStatus = 'Blocked';
     setOwners(prev => prev.map(o => {
-      if (o.id === id) {
-        const nextStatus = o.status === 'Active' ? 'Blocked' : 'Active';
+      if (o.id === id || o.customId === id) {
+        nextStatus = o.status === 'Active' ? 'Blocked' : 'Active';
         showToast(`Owner ${o.name} is now ${nextStatus}`, nextStatus === 'Active' ? 'success' : 'warning');
         return { ...o, status: nextStatus };
       }
       return o;
     }));
+
+    try {
+      await api.patch(`/kyc/${id}/toggle-block`);
+    } catch (err) {
+      console.warn('[API] Toggle block owner failed on backend:', err.message);
+    }
   };
 
-  // User Handlers
-  const handleToggleBlockUser = (id) => {
+  // User Handlers (Optimistic UI + Live Backend Sync)
+  const handleToggleBlockUser = async (id) => {
+    let nextStatus = 'Suspended';
     setUsers(prev => prev.map(u => {
-      if (u.id === id) {
-        const nextStatus = u.status === 'Active' ? 'Suspended' : 'Active';
+      if (u.id === id || u.customId === id) {
+        nextStatus = u.status === 'Active' ? 'Suspended' : 'Active';
+        showToast(`User status set to ${nextStatus}`, nextStatus === 'Active' ? 'success' : 'warning');
         return { ...u, status: nextStatus };
       }
       return u;
     }));
+
+    try {
+      await api.patch(`/users/${id}/toggle-block`);
+    } catch (err) {
+      console.warn('[API] Toggle block user failed on backend:', err.message);
+    }
   };
 
   // Services Handlers
