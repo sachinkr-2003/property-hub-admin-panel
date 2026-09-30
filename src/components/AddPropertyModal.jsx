@@ -108,7 +108,7 @@ export default function AddPropertyModal({ isOpen, onClose, onAddProperty }) {
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Property Type
@@ -154,7 +154,7 @@ export default function AddPropertyModal({ isOpen, onClose, onAddProperty }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Price (INR) *
@@ -195,7 +195,7 @@ export default function AddPropertyModal({ isOpen, onClose, onAddProperty }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Locality / Neighborhood *
@@ -223,7 +223,7 @@ export default function AddPropertyModal({ isOpen, onClose, onAddProperty }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Owner Full Name *
@@ -266,7 +266,7 @@ export default function AddPropertyModal({ isOpen, onClose, onAddProperty }) {
           </div>
 
           {/* Footer */}
-          <div className="modal-footer flex items-center justify-end gap-2">
+          <div className="modal-footer flex items-center justify-end gap-2 flex-wrap">
             <button type="button" className="btn-secondary" onClick={onClose}>
               Cancel
             </button>

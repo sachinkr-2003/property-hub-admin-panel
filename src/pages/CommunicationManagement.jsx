@@ -128,8 +128,8 @@ export default function CommunicationManagement({ activeSubPage = 'support_ticke
   return (
     <div className="space-y-4">
       {/* Top Tab Bar */}
-      <div className="flex items-center justify-between border-b border-slate-300 pb-2">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between border-b border-slate-300 pb-2 flex-wrap gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <button 
             type="button"
             className={`px-3 py-1.5 text-xs font-semibold rounded-[2px] border transition-colors flex items-center gap-1.5 ${
@@ -174,9 +174,9 @@ export default function CommunicationManagement({ activeSubPage = 'support_ticke
       {/* ================= TAB 1: SUPPORT TICKETS ================= */}
       {activeTab === 'tickets' && (
         <div className="space-y-3">
-          <div className="filter-toolbar flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="search-input-wrap w-64">
+          <div className="filter-toolbar flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+              <div className="search-input-wrap w-full sm:w-64">
                 <Search size={14} className="search-icon" />
                 <input 
                   type="text" 
@@ -289,9 +289,9 @@ export default function CommunicationManagement({ activeSubPage = 'support_ticke
 
       {/* ================= TAB 2: PUSH BROADCAST & MOBILE SIMULATOR ================= */}
       {activeTab === 'push' && (
-        <div className="grid grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Form & Presets */}
-          <div className="col-span-7 space-y-4">
+          <div className="col-span-1 lg:col-span-7 space-y-4">
             <div className="classic-card p-4">
               <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200">
                 <div>
@@ -380,7 +380,7 @@ export default function CommunicationManagement({ activeSubPage = 'support_ticke
                   />
                 </div>
 
-                <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
+                <div className="pt-2 border-t border-slate-200 flex items-center justify-between flex-wrap gap-2">
                   <div className="text-[11px] text-slate-500">
                     Est. Delivery Latency: <strong>&lt; 1.2s</strong>
                   </div>
@@ -397,7 +397,7 @@ export default function CommunicationManagement({ activeSubPage = 'support_ticke
           </div>
 
           {/* Right Column: Interactive Phone Simulator */}
-          <div className="col-span-5 flex flex-col items-center">
+          <div className="col-span-1 lg:col-span-5 flex flex-col items-center w-full">
             <div className="w-full max-w-[340px]">
               {/* Simulator Platform Selector */}
               <div className="flex items-center justify-between mb-2 px-1">

@@ -78,7 +78,7 @@ export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' 
   return (
     <div className="space-y-4">
       {/* Top Controls Bar */}
-      <div className="flex items-center justify-between border-b border-slate-300 pb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-300 pb-2">
         <div className="flex items-center gap-1.5 flex-wrap">
           <button 
             type="button"
@@ -134,8 +134,8 @@ export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' 
         </div>
 
         {/* Date Filter & Print */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center bg-slate-100 p-0.5 border border-slate-300 rounded-[2px]">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center bg-slate-100 p-0.5 border border-slate-300 rounded-[2px] flex-wrap">
             <button
               type="button"
               onClick={() => setDateRange('week')}
@@ -179,7 +179,7 @@ export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' 
       </div>
 
       {/* KPI Tiles */}
-      <div className="grid grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         <div className="classic-card p-3.5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">Monthly User Inflow</span>
@@ -238,7 +238,7 @@ export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' 
       {/* ================= TAB 1: PLATFORM HEALTH & VELOCITY ================= */}
       {(activeTab === 'platform' || activeTab === 'revenue') && (
         <div className="classic-card p-4 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-3 flex-wrap gap-2">
             <div>
               <h3 className="text-sm font-bold text-slate-900">
                 Monthly Recurring Revenue Velocity & Listing Influx
@@ -250,29 +250,33 @@ export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' 
             <span className="badge-pill badge-green text-[10px]">● Financial Audit Verified</span>
           </div>
 
-          {/* Bar Chart Visualization */}
-          <div className="flex items-end justify-between h-48 pt-4 pb-2 border-b border-slate-200 gap-3 px-4">
-            {mockRevenueTrends.map((item, idx) => {
-              const heightPercent = Math.round((item.revenue / 500000) * 100);
-              return (
-                <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end gap-1.5 group cursor-pointer">
-                  <span className="text-[11px] font-mono font-bold text-purple-800 opacity-90 group-hover:scale-110 transition-transform">
-                    ₹{(item.revenue / 1000).toFixed(0)}k
-                  </span>
-                  <div 
-                    className="w-full max-w-[42px] bg-purple-700 group-hover:bg-purple-800 transition-colors rounded-[2px] relative"
-                    style={{ height: `${heightPercent}%` }}
-                    title={`${item.month}: ₹${item.revenue.toLocaleString('en-IN')} (${item.listings} listings)`}
-                  />
-                  <span className="text-xs font-semibold text-slate-600 mt-1">
-                    {item.month}
-                  </span>
-                  <span className="text-[10px] font-mono text-slate-400">
-                    {item.listings} listings
-                  </span>
-                </div>
-              );
-            })}
+          {/* Bar Chart Visualization with Horizontal Scroll for Mobile */}
+          <div className="overflow-x-auto">
+            <div className="min-w-[420px]">
+              <div className="flex items-end justify-between h-48 pt-4 pb-2 border-b border-slate-200 gap-3 px-4">
+                {mockRevenueTrends.map((item, idx) => {
+                  const heightPercent = Math.round((item.revenue / 500000) * 100);
+                  return (
+                    <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end gap-1.5 group cursor-pointer">
+                      <span className="text-[11px] font-mono font-bold text-purple-800 opacity-90 group-hover:scale-110 transition-transform">
+                        ₹{(item.revenue / 1000).toFixed(0)}k
+                      </span>
+                      <div 
+                        className="w-full max-w-[42px] bg-purple-700 group-hover:bg-purple-800 transition-colors rounded-[2px] relative"
+                        style={{ height: `${heightPercent}%` }}
+                        title={`${item.month}: ₹${item.revenue.toLocaleString('en-IN')} (${item.listings} listings)`}
+                      />
+                      <span className="text-xs font-semibold text-slate-600 mt-1">
+                        {item.month}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {item.listings} listings
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           {/* System Health Specs Table */}
@@ -300,7 +304,7 @@ export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' 
       {/* ================= TAB 2: TENANT DEMOGRAPHICS ================= */}
       {activeTab === 'user' && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-slate-900">Registered Tenant Demographics & Budget Segments</h3>
               <p className="text-xs text-slate-500">
@@ -310,7 +314,7 @@ export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' 
             <button
               type="button"
               onClick={handleExportDemographics}
-              className="btn-secondary text-xs flex items-center gap-1.5"
+              className="btn-secondary text-xs flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
             >
               <Download size={13} />
               <span>Export Demographics CSV</span>
@@ -357,7 +361,7 @@ export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' 
       {/* ================= TAB 3: PROPERTY VELOCITY ================= */}
       {activeTab === 'property' && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-slate-900">Property Rental Turnaround Velocity</h3>
               <p className="text-xs text-slate-500">
@@ -367,7 +371,7 @@ export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' 
             <button
               type="button"
               onClick={handleExportVelocity}
-              className="btn-secondary text-xs flex items-center gap-1.5"
+              className="btn-secondary text-xs flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
             >
               <Download size={13} />
               <span>Export Velocity CSV</span>

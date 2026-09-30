@@ -169,7 +169,7 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
   return (
     <div className="space-y-4">
       {/* Top Financial KPI Row */}
-      <div className="grid grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         <div className="classic-card p-3.5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">Total Monthly Collections</span>
@@ -225,7 +225,7 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center justify-between border-b border-slate-300 pb-2">
+      <div className="flex items-center justify-between border-b border-slate-300 pb-2 flex-wrap gap-2">
         <div className="flex items-center gap-1.5 flex-wrap">
           <button 
             type="button"
@@ -298,9 +298,9 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
       {activeTab === 'transactions' && (
         <div className="space-y-3">
           {/* Toolbar */}
-          <div className="filter-toolbar flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="search-input-wrap w-64">
+          <div className="filter-toolbar flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+              <div className="search-input-wrap w-full sm:w-64">
                 <Search size={14} className="search-icon" />
                 <input 
                   type="text" 
@@ -490,7 +490,7 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
       {/* ================= TAB 2: SUBSCRIPTION PLANS ================= */}
       {activeTab === 'subscriptions' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-slate-900">Landlord Recurring Subscription Tiers</h3>
               <p className="text-xs text-slate-500">
@@ -500,13 +500,13 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
             <button 
               type="button" 
               onClick={() => showToast('Subscription pricing synced across mobile apps.', 'success')}
-              className="btn-primary text-xs"
+              className="btn-primary text-xs shrink-0 self-start sm:self-auto"
             >
               Sync Plans with App Store
             </button>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {subscriptionPlans.map((plan) => (
               <div key={plan.id} className="classic-card p-4 flex flex-col justify-between space-y-3">
                 <div>

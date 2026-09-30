@@ -87,28 +87,28 @@ export default function KycModal({ kycItem, onClose, onApprove, onReject }) {
       >
         {/* Header */}
         <div className="modal-header">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-[2px] bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center font-bold">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-[2px] bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center font-bold shrink-0">
               <ShieldCheck size={18} />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-slate-900">
-                  Owner KYC Dossier: {ownerName}
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <h3 className="text-xs sm:text-sm font-bold text-slate-900 truncate max-w-[130px] sm:max-w-none">
+                  Owner KYC: {ownerName}
                 </h3>
                 <span className="font-mono text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-[2px] border border-slate-300">
                   {kycItem.id}
                 </span>
                 <span className={`badge-pill ${isVerified ? 'badge-green' : 'badge-yellow'}`}>
-                  {isVerified ? 'Verified Account' : 'Pending Verification'}
+                  {isVerified ? 'Verified' : 'Pending'}
                 </span>
               </div>
-              <div className="text-[11px] text-slate-500">
+              <div className="text-[11px] text-slate-500 truncate">
                 Contact: <strong className="text-slate-700">{ownerMobile}</strong> • Email: <strong className="text-slate-700">{ownerEmail}</strong>
               </div>
             </div>
           </div>
-          <button className="btn-icon" onClick={onClose} title="Close Modal">
+          <button className="btn-icon shrink-0" onClick={onClose} title="Close Modal">
             <X size={16} />
           </button>
         </div>
@@ -116,14 +116,14 @@ export default function KycModal({ kycItem, onClose, onApprove, onReject }) {
         {/* Body */}
         <div className="modal-body space-y-4">
           {/* Owner Quick Meta Grid */}
-          <div className="grid grid-cols-4 gap-2 bg-slate-50 p-2.5 rounded-[2px] border border-slate-300 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 p-2.5 rounded-[2px] border border-slate-300 text-xs">
             <div>
               <span className="text-[11px] font-medium text-slate-500 block">Landlord / Owner</span>
-              <span className="font-bold text-slate-900">{ownerName}</span>
+              <span className="font-bold text-slate-900 truncate block">{ownerName}</span>
             </div>
             <div>
               <span className="text-[11px] font-medium text-slate-500 block">Mobile Verification</span>
-              <span className="font-mono text-slate-700">{ownerMobile} (OTP Verified)</span>
+              <span className="font-mono text-slate-700 truncate block">{ownerMobile}</span>
             </div>
             <div>
               <span className="text-[11px] font-medium text-slate-500 block">PAN Number</span>
@@ -314,12 +314,12 @@ export default function KycModal({ kycItem, onClose, onApprove, onReject }) {
         </div>
 
         {/* Footer */}
-        <div className="modal-footer flex items-center justify-between">
-          <button className="btn-secondary" onClick={onClose}>
+        <div className="modal-footer flex items-center justify-between flex-wrap gap-2">
+          <button className="btn-secondary text-xs" onClick={onClose}>
             Close Dossier
           </button>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {!isVerified && (
               <button 
                 type="button"

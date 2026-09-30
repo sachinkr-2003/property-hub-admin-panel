@@ -192,9 +192,9 @@ export default function OwnerManagement({
   // ================= VIEW 1: KYC DOSSIERS AUDIT =================
   if (activeSubPage === 'kyc_dossiers') {
     return (
-      <div className="grid grid-cols-12 gap-4 min-h-[calc(100vh-140px)]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[calc(100vh-140px)]">
         {/* Left Side: Owner Selector */}
-        <div className="col-span-4 classic-card p-0 flex flex-col h-full">
+        <div className="col-span-1 lg:col-span-4 classic-card p-0 flex flex-col h-auto max-h-[350px] lg:max-h-none lg:h-full">
           <div className="p-3 border-b border-slate-300 bg-slate-50 flex items-center justify-between">
             <span className="text-xs font-bold text-slate-800">KYC Dossier Applications</span>
             <span className="text-[11px] font-mono text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded-[2px] border border-purple-200">
@@ -215,7 +215,7 @@ export default function OwnerManagement({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto divide-y divide-slate-200 max-h-[620px]">
+          <div className="flex-1 overflow-y-auto divide-y divide-slate-200 max-h-[300px] lg:max-h-[620px]">
             {filteredOwners.map((o) => (
               <div 
                 key={o.id}
@@ -238,12 +238,12 @@ export default function OwnerManagement({
         </div>
 
         {/* Right Side: Owner Dossier Quick Inspector */}
-        <div className="col-span-8 space-y-4">
+        <div className="col-span-1 lg:col-span-8 space-y-4">
           {selectedDossierOwner ? (
             <div className="classic-card p-4 space-y-4">
-              <div className="flex items-start justify-between pb-3 border-b border-slate-200">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 border-b border-slate-200 gap-3">
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="text-base font-bold text-slate-900">{selectedDossierOwner.name}</h2>
                     <span className="font-mono text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-[2px] border border-slate-300">
                       {selectedDossierOwner.id}
@@ -260,7 +260,7 @@ export default function OwnerManagement({
                 <button 
                   type="button"
                   onClick={() => onSelectKyc(selectedDossierOwner)}
-                  className="btn-primary flex items-center gap-1.5"
+                  className="btn-primary flex items-center gap-1.5 shrink-0"
                 >
                   <Eye size={13} />
                   <span>Open Full KYC Inspector</span>
@@ -268,7 +268,7 @@ export default function OwnerManagement({
               </div>
 
               {/* Submitted Docs Grid */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="p-3 bg-slate-50 border border-slate-300 rounded-[2px]">
                   <span className="text-[10px] font-bold uppercase text-slate-500 block">UIDAI Aadhaar</span>
                   <span className="font-mono font-bold text-xs text-slate-800 mt-1 block">
@@ -296,11 +296,11 @@ export default function OwnerManagement({
 
               {/* Quick Actions */}
               {selectedDossierOwner.kycStatus === 'Pending' && (
-                <div className="p-3 bg-amber-50 border border-amber-300 rounded-[2px] flex items-center justify-between">
+                <div className="p-3 bg-amber-50 border border-amber-300 rounded-[2px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="text-xs text-amber-900">
                     <strong>Pending Verification:</strong> Review documents or fast-track decision:
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <button
                       type="button"
                       onClick={() => handleQuickReject(selectedDossierOwner)}

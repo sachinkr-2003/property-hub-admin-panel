@@ -33,6 +33,7 @@ export default function DashboardOverview({
   activeSubPage = 'overview'
 }) {
   const [queueTab, setQueueTab] = useState('kyc'); // 'kyc', 'properties', 'duplicates'
+  const [activeChartMode, setActiveChartMode] = useState('revenue');
   
   const pendingKyc = owners.filter(o => o.kycStatus === 'Pending');
   const pendingProps = properties.filter(p => p.status === 'Pending Verification');
@@ -367,8 +368,6 @@ export default function DashboardOverview({
     { month: 'Sep', rev: 4.85, listings: 1248 }
   ];
 
-  const [activeChartMode, setActiveChartMode] = useState('revenue');
-
   // Default: Full Overview Screen
   return (
     <div>
@@ -487,32 +486,32 @@ export default function DashboardOverview({
 
       {/* Visual Growth & Revenue Analytics Chart Card */}
       <div className="classic-card">
-        <div className="card-topbar">
+        <div className="card-topbar flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-[2px] flex items-center justify-center">
+            <div className="w-7 h-7 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-[2px] flex items-center justify-center shrink-0">
               <BarChart3 size={15} />
             </div>
             <div>
-              <h3>Platform Growth & Monetization Velocity (2026 Run Rate)</h3>
-              <p>Monthly trends for revenue collections and verified listing influx</p>
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Platform Growth & Velocity (2026 Run Rate)</h3>
+              <p className="text-[11px] text-slate-500">Monthly trends for revenue collections and verified listing influx</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <div className="classic-tabbar">
               <button
                 type="button"
                 className={`tab-btn-pill ${activeChartMode === 'revenue' ? 'active' : ''}`}
                 onClick={() => setActiveChartMode('revenue')}
               >
-                Revenue Velocity (₹ Lakhs)
+                Revenue (₹ Lakhs)
               </button>
               <button
                 type="button"
                 className={`tab-btn-pill ${activeChartMode === 'listings' ? 'active' : ''}`}
                 onClick={() => setActiveChartMode('listings')}
               >
-                Catalog Influx (Listings)
+                Catalog Influx
               </button>
             </div>
 
@@ -535,44 +534,46 @@ export default function DashboardOverview({
           </div>
         </div>
 
-        {/* Visual Bar Chart */}
-        <div className="mt-4 pt-2">
-          <div className="h-44 flex items-end justify-between gap-3 border-b border-slate-300 pb-2 px-2">
-            {monthlyGrowthData.map((d, idx) => {
-              const maxVal = activeChartMode === 'revenue' ? 5.5 : 1400;
-              const curVal = activeChartMode === 'revenue' ? d.rev : d.listings;
-              const heightPct = Math.round((curVal / maxVal) * 100);
-              const isPeak = idx === monthlyGrowthData.length - 1;
+        {/* Visual Bar Chart with Horizontal Scroll for Mobile */}
+        <div className="mt-4 pt-2 overflow-x-auto">
+          <div className="min-w-[420px]">
+            <div className="h-44 flex items-end justify-between gap-3 border-b border-slate-300 pb-2 px-2">
+              {monthlyGrowthData.map((d, idx) => {
+                const maxVal = activeChartMode === 'revenue' ? 5.5 : 1400;
+                const curVal = activeChartMode === 'revenue' ? d.rev : d.listings;
+                const heightPct = Math.round((curVal / maxVal) * 100);
+                const isPeak = idx === monthlyGrowthData.length - 1;
 
-              return (
-                <div key={d.month} className="flex-1 flex flex-col items-center h-full justify-end group relative">
-                  {/* Tooltip on Hover */}
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 bg-slate-900 text-white text-[11px] font-semibold py-1 px-2 rounded-[2px] whitespace-nowrap pointer-events-none shadow-md z-10">
-                    {activeChartMode === 'revenue' ? `₹ ${d.rev} Lakh` : `${d.listings} Listings`}
+                return (
+                  <div key={d.month} className="flex-1 flex flex-col items-center h-full justify-end group relative">
+                    {/* Tooltip on Hover */}
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 bg-slate-900 text-white text-[11px] font-semibold py-1 px-2 rounded-[2px] whitespace-nowrap pointer-events-none shadow-md z-10">
+                      {activeChartMode === 'revenue' ? `₹ ${d.rev} Lakh` : `${d.listings} Listings`}
+                    </div>
+
+                    {/* Value label above bar */}
+                    <span className="text-[10px] font-mono text-slate-500 mb-1">
+                      {activeChartMode === 'revenue' ? `${d.rev}L` : d.listings}
+                    </span>
+
+                    {/* Bar */}
+                    <div 
+                      style={{ height: `${heightPct}%` }}
+                      className={`w-full max-w-[42px] rounded-[2px] transition-all duration-300 cursor-pointer ${
+                        isPeak 
+                          ? 'bg-indigo-700 hover:bg-indigo-800' 
+                          : 'bg-indigo-200 hover:bg-indigo-400'
+                      }`}
+                    />
+
+                    {/* Month Label */}
+                    <span className={`text-[11px] mt-2 font-medium ${isPeak ? 'text-indigo-700 font-bold' : 'text-slate-500'}`}>
+                      {d.month}
+                    </span>
                   </div>
-
-                  {/* Value label above bar */}
-                  <span className="text-[10px] font-mono text-slate-500 mb-1">
-                    {activeChartMode === 'revenue' ? `${d.rev}L` : d.listings}
-                  </span>
-
-                  {/* Bar */}
-                  <div 
-                    style={{ height: `${heightPct}%` }}
-                    className={`w-full max-w-[42px] rounded-[2px] transition-all duration-300 cursor-pointer ${
-                      isPeak 
-                        ? 'bg-indigo-700 hover:bg-indigo-800' 
-                        : 'bg-indigo-200 hover:bg-indigo-400'
-                    }`}
-                  />
-
-                  {/* Month Label */}
-                  <span className={`text-[11px] mt-2 font-medium ${isPeak ? 'text-indigo-700 font-bold' : 'text-slate-500'}`}>
-                    {d.month}
-                  </span>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
           {/* Quick Stats Grid under Chart */}
@@ -599,23 +600,13 @@ export default function DashboardOverview({
 
       {/* Duplicate Check Alert Notice */}
       {duplicateProps.length > 0 && (
-        <div style={{ 
-          background: '#fff1f2', 
-          border: '1px solid #fecdd3', 
-          borderRadius: 'var(--radius-square)', 
-          padding: '9px 14px', 
-          marginBottom: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: '#9f1239' }}>
-            <AlertTriangle size={15} />
+        <div className="bg-rose-50 border border-rose-200 rounded-[2px] p-2.5 sm:p-3 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2 text-xs text-rose-900">
+            <AlertTriangle size={15} className="shrink-0 text-rose-700" />
             <span><strong>Duplicate Detection Alert:</strong> {duplicateProps.length} listing flagged with identical address/photos to an existing property.</span>
           </div>
           <button 
-            className="btn-classic" 
-            style={{ fontSize: '0.74rem', padding: '3px 8px', borderColor: '#fecdd3', color: '#9f1239' }}
+            className="btn-classic text-xs py-1 px-2.5 border-rose-300 text-rose-800 hover:bg-rose-100 shrink-0" 
             onClick={() => setActiveTab('properties')}
           >
             Review Duplicates
@@ -624,7 +615,7 @@ export default function DashboardOverview({
       )}
 
       {/* Two Column Grid with PROPER EXCEL LINING TABLES */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         
         {/* Pending Owner KYC Queue (Excel Sheet Table) */}
         <div className="classic-card">

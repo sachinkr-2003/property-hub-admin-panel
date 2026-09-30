@@ -176,9 +176,9 @@ export default function Header({
   const hasSearchResults = matchingProperties.length > 0 || matchingOwners.length > 0 || matchingUsers.length > 0;
 
   return (
-    <header className="h-[62px] min-h-[62px] bg-white/98 backdrop-blur-md border-b border-slate-300 flex items-center justify-between gap-4 px-4.5 sticky top-0 z-50 shadow-xs">
+    <header className="h-[62px] min-h-[62px] bg-white/98 backdrop-blur-md border-b border-slate-300 flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-4.5 sticky top-0 z-50 shadow-xs">
       {/* Left: Sidebar Toggle + Structured Breadcrumbs */}
-      <div className="flex items-center gap-3 shrink-0 min-w-0">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
         {onToggleSidebar && (
           <button 
             type="button"
@@ -190,8 +190,8 @@ export default function Header({
           </button>
         )}
 
-        <div className="flex flex-col gap-0.5 justify-center">
-          <div className="flex items-center gap-1 text-[11px] text-slate-500 whitespace-nowrap leading-none">
+        <div className="flex flex-col gap-0.5 justify-center min-w-0">
+          <div className="hidden sm:flex items-center gap-1 text-[11px] text-slate-500 whitespace-nowrap leading-none">
             <span 
               className="inline-flex items-center gap-1 cursor-pointer transition-colors hover:text-indigo-700 hover:underline" 
               onClick={() => onNavigate && onNavigate('dashboard', 'overview')}
@@ -211,27 +211,27 @@ export default function Header({
             </span>
           </div>
 
-          <h1 className="text-[15px] font-bold text-slate-900 tracking-tight whitespace-nowrap leading-tight m-0">
+          <h1 className="text-xs sm:text-[15px] font-bold text-slate-900 tracking-tight whitespace-nowrap leading-tight m-0 max-w-[120px] sm:max-w-none truncate">
             {subPageNames[activeSubPage] || moduleNames[activeModule] || 'Dashboard'}
           </h1>
         </div>
       </div>
 
       {/* Center: Global Search Bar with Ctrl+K Shortcut */}
-      <div className="relative flex-1 max-w-[380px] min-w-[160px]" ref={searchRef}>
+      <div className="relative flex-1 max-w-[380px] min-w-[120px] sm:min-w-[160px]" ref={searchRef}>
         <div className="relative w-full">
           <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           <input 
             id="global-search-input"
             type="text" 
-            placeholder="Search properties, owners, users..." 
+            placeholder="Search..." 
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
               setShowSearchDropdown(true);
             }}
             onFocus={() => setShowSearchDropdown(true)}
-            className="w-full bg-slate-100 border border-slate-300 rounded-[2px] py-1.5 pr-14 pl-7.5 text-xs text-slate-900 outline-none transition-all focus:bg-white focus:border-indigo-700 focus:ring-2 focus:ring-indigo-700/10"
+            className="w-full bg-slate-100 border border-slate-300 rounded-[2px] py-1.5 pr-8 sm:pr-14 pl-7.5 text-xs text-slate-900 outline-none transition-all focus:bg-white focus:border-indigo-700 focus:ring-2 focus:ring-indigo-700/10"
           />
           {searchQuery ? (
             <button 
@@ -243,13 +243,13 @@ export default function Header({
               <X size={12} />
             </button>
           ) : (
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono font-semibold text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded-[2px] border border-slate-300 pointer-events-none">Ctrl K</span>
+            <span className="hidden sm:inline-block absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono font-semibold text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded-[2px] border border-slate-300 pointer-events-none">Ctrl K</span>
           )}
         </div>
 
         {/* Live Search Quick Results Dropdown */}
         {showSearchDropdown && cleanQuery && (
-          <div className="absolute top-[calc(100%+6px)] left-0 w-[380px] max-h-[400px] bg-white border border-slate-300 rounded-[2px] shadow-xl z-50 overflow-y-auto">
+          <div className="absolute top-[calc(100%+6px)] -left-8 sm:left-0 w-[min(380px,calc(100vw-24px))] max-h-[400px] bg-white border border-slate-300 rounded-[2px] shadow-xl z-50 overflow-y-auto">
             <div className="p-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs font-semibold text-slate-500">
               <span>Search Results for "{searchQuery}"</span>
               <button 
@@ -352,12 +352,12 @@ export default function Header({
         {/* Database Sync Button */}
         <button 
           type="button"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] text-xs font-medium cursor-pointer transition-all border border-slate-300 bg-white text-slate-800 hover:bg-slate-50" 
+          className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-[2px] text-xs font-medium cursor-pointer transition-all border border-slate-300 bg-white text-slate-800 hover:bg-slate-50" 
           onClick={handleSync} 
           title="Sync memory cache with PostgreSQL & MongoDB database nodes"
         >
           <RefreshCw size={13} className={isSyncing ? 'animate-spin' : ''} />
-          <span>{isSyncing ? 'Syncing...' : 'Sync'}</span>
+          <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync'}</span>
         </button>
 
         {/* Notifications Popover Dropdown */}
@@ -375,7 +375,7 @@ export default function Header({
           </button>
 
           {showNotifications && (
-            <div className="absolute top-[calc(100%+8px)] right-0 w-[330px] bg-white border border-slate-300 rounded-[2px] shadow-xl z-50 flex flex-col">
+            <div className="absolute top-[calc(100%+8px)] -right-12 sm:right-0 w-[min(330px,calc(100vw-24px))] bg-white border border-slate-300 rounded-[2px] shadow-xl z-50 flex flex-col">
               <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs font-bold text-slate-800">
                 <div className="flex items-center gap-1.5">
                   <ShieldAlert size={15} color="#4338ca" />
@@ -496,7 +496,7 @@ export default function Header({
           </button>
 
           {showProfileMenu && (
-            <div className="absolute top-[calc(100%+8px)] right-0 w-[260px] bg-white border border-slate-300 rounded-[2px] shadow-xl z-50 flex flex-col">
+            <div className="absolute top-[calc(100%+8px)] right-0 w-[min(260px,calc(100vw-24px))] bg-white border border-slate-300 rounded-[2px] shadow-xl z-50 flex flex-col">
               <div className="p-3 bg-slate-50 border-b border-slate-200">
                 <div className="font-bold text-sm text-slate-900">Aarav Singhania</div>
                 <div className="text-xs text-slate-500">aarav@propertyhub.in</div>

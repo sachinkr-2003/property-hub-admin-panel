@@ -214,9 +214,9 @@ export default function UserManagement({ users, onToggleBlockUser, activeSubPage
   // ================= VIEW 1: USER DETAILS DOSSIER =================
   if (activeSubPage === 'user_details') {
     return (
-      <div className="grid grid-cols-12 gap-4 min-h-[calc(100vh-140px)]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[calc(100vh-140px)]">
         {/* Left Side: User Selector List */}
-        <div className="col-span-4 classic-card p-0 flex flex-col h-full">
+        <div className="col-span-1 lg:col-span-4 classic-card p-0 flex flex-col h-auto max-h-[350px] lg:max-h-none lg:h-full">
           <div className="p-3 border-b border-slate-300 bg-slate-50 flex items-center justify-between">
             <span className="text-xs font-bold text-slate-800">User Directory Directory</span>
             <span className="text-[11px] font-mono text-slate-500 bg-white border border-slate-300 px-1.5 py-0.5 rounded-[2px]">
@@ -237,7 +237,7 @@ export default function UserManagement({ users, onToggleBlockUser, activeSubPage
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto divide-y divide-slate-200 max-h-[620px]">
+          <div className="flex-1 overflow-y-auto divide-y divide-slate-200 max-h-[300px] lg:max-h-[620px]">
             {filteredUsers.map((u) => (
               <div 
                 key={u.id}
@@ -271,20 +271,20 @@ export default function UserManagement({ users, onToggleBlockUser, activeSubPage
         </div>
 
         {/* Right Side: Detailed User Dossier */}
-        <div className="col-span-8 space-y-4">
+        <div className="col-span-1 lg:col-span-8 space-y-4">
           {selectedUser ? (
             <>
               {/* Profile Card */}
               <div className="classic-card p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3.5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3.5 flex-wrap">
                     <img 
                       src={selectedUser.profileImage} 
                       alt={selectedUser.name} 
                       className="w-16 h-16 rounded-[2px] object-cover border border-slate-300 shadow-xs"
                     />
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h2 className="text-base font-bold text-slate-900">{selectedUser.name}</h2>
                         <span className="font-mono text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-[2px] border border-slate-300">
                           {selectedUser.id}
@@ -294,14 +294,14 @@ export default function UserManagement({ users, onToggleBlockUser, activeSubPage
                         </span>
                       </div>
                       <div className="text-xs text-slate-600 mt-0.5 font-medium">{selectedUser.role}</div>
-                      <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                      <div className="flex items-center gap-3 text-xs text-slate-500 mt-1 flex-wrap">
                         <span className="flex items-center gap-1"><MapPin size={12} /> {selectedUser.locality}, {selectedUser.city}</span>
                         <span className="flex items-center gap-1"><Calendar size={12} /> Joined {selectedUser.createdAt}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <button 
                       type="button"
                       onClick={() => handleBlockAction(selectedUser)}
@@ -325,7 +325,7 @@ export default function UserManagement({ users, onToggleBlockUser, activeSubPage
                 </div>
 
                 {/* KPI Metrics Strip */}
-                <div className="grid grid-cols-4 gap-3 mt-4 pt-3 border-t border-slate-200">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-3 border-t border-slate-200">
                   <div className="bg-slate-50 p-2.5 rounded-[2px] border border-slate-300">
                     <span className="text-[11px] text-slate-500 block">Enquiries Submitted</span>
                     <span className="text-sm font-bold text-slate-900">{selectedUser.enquiriesSent} Listings</span>
@@ -352,7 +352,7 @@ export default function UserManagement({ users, onToggleBlockUser, activeSubPage
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">
                   Contact Information & Verification Metadata
                 </h3>
-                <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div className="p-2.5 bg-slate-50 border border-slate-300 rounded-[2px]">
                     <span className="text-slate-500 block text-[11px]">Primary Phone</span>
                     <span className="font-mono font-bold text-slate-800">{selectedUser.mobile}</span>

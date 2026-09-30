@@ -4,6 +4,7 @@ import Header from './components/Header';
 import PropertyModal from './components/PropertyModal';
 import KycModal from './components/KycModal';
 import AddPropertyModal from './components/AddPropertyModal';
+import ErrorBoundary from './components/ErrorBoundary';
 
 import DashboardOverview from './pages/DashboardOverview';
 import UserManagement from './pages/UserManagement';
@@ -45,6 +46,7 @@ export default function App() {
     owners: true
   });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Domain states
@@ -224,28 +226,52 @@ export default function App() {
     return <LoginPage onLogin={handleLogin} />;
   }
 
+  const handleToggleSidebar = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setIsMobileSidebarOpen(prev => !prev);
+    } else {
+      setIsSidebarCollapsed(prev => !prev);
+    }
+  };
+
   return (
     <div className="flex min-h-screen w-full relative bg-[#f4f6f9]">
+      {/* Mobile Drawer Backdrop */}
+      {isMobileSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden transition-opacity"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar with dropdown sub-pages matching poster */}
       <Sidebar 
         activeModule={activeModule}
         activeSubPage={activeSubPage}
-        onNavigate={handleNavigate}
+        onNavigate={(modId, subId) => {
+          handleNavigate(modId, subId);
+          setIsMobileSidebarOpen(false);
+        }}
         expandedModules={expandedModules}
         onToggleExpand={handleToggleExpand}
         pendingKycCount={pendingKycCount}
         pendingPropertiesCount={pendingPropsCount}
         openTicketsCount={openTicketsCount}
         isCollapsed={isSidebarCollapsed}
+        isOpenMobile={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
         onLogout={handleLogout}
       />
 
       {/* Main Layout Area */}
-      <div className={`flex-1 flex flex-col min-w-0 relative transition-all duration-200 min-h-screen ${isSidebarCollapsed ? 'ml-16' : 'ml-[270px]'}`}>
+      <div className={`flex-1 flex flex-col min-w-0 relative transition-all duration-200 min-h-screen ml-0 ${isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-[270px]'}`}>
         <Header 
           activeModule={activeModule}
           activeSubPage={activeSubPage}
-          onNavigate={handleNavigate}
+          onNavigate={(modId, subId) => {
+            handleNavigate(modId, subId);
+            setIsMobileSidebarOpen(false);
+          }}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           pendingKycCount={pendingKycCount}
@@ -253,7 +279,7 @@ export default function App() {
           openTicketsCount={openTicketsCount}
           unreadCount={pendingKycCount + pendingPropsCount}
           isSidebarCollapsed={isSidebarCollapsed}
-          onToggleSidebar={() => setIsSidebarCollapsed(prev => !prev)}
+          onToggleSidebar={handleToggleSidebar}
           properties={properties}
           owners={owners}
           users={users}
@@ -262,96 +288,98 @@ export default function App() {
           onLogout={handleLogout}
         />
 
-        <main className="flex-1 p-5 min-h-[calc(100vh-62px)] flex flex-col">
-          {activeModule === 'dashboard' && (
-            <DashboardOverview 
-              metrics={metrics}
-              owners={owners}
-              properties={properties}
-              onSelectProperty={(prop) => setSelectedProperty(prop)}
-              onSelectKyc={(owner) => setSelectedKyc(owner)}
-              setActiveTab={(tab) => handleNavigate(tab, 'overview')}
-              activeSubPage={activeSubPage}
-            />
-          )}
+        <main className="flex-1 p-3 sm:p-5 min-h-[calc(100vh-62px)] flex flex-col">
+          <ErrorBoundary>
+            {activeModule === 'dashboard' && (
+              <DashboardOverview 
+                metrics={metrics}
+                owners={owners}
+                properties={properties}
+                onSelectProperty={(prop) => setSelectedProperty(prop)}
+                onSelectKyc={(owner) => setSelectedKyc(owner)}
+                setActiveTab={(tab) => handleNavigate(tab, 'overview')}
+                activeSubPage={activeSubPage}
+              />
+            )}
 
-          {activeModule === 'users' && (
-            <UserManagement 
-              users={users}
-              onToggleBlockUser={handleToggleBlockUser}
-              activeSubPage={activeSubPage}
-            />
-          )}
+            {activeModule === 'users' && (
+              <UserManagement 
+                users={users}
+                onToggleBlockUser={handleToggleBlockUser}
+                activeSubPage={activeSubPage}
+              />
+            )}
 
-          {activeModule === 'owners' && (
-            <OwnerManagement 
-              owners={owners}
-              onSelectKyc={(owner) => setSelectedKyc(owner)}
-              onApproveKyc={handleApproveKyc}
-              onRejectKyc={handleRejectKyc}
-              onToggleBlockOwner={handleToggleBlockOwner}
-              activeSubPage={activeSubPage}
-            />
-          )}
+            {activeModule === 'owners' && (
+              <OwnerManagement 
+                owners={owners}
+                onSelectKyc={(owner) => setSelectedKyc(owner)}
+                onApproveKyc={handleApproveKyc}
+                onRejectKyc={handleRejectKyc}
+                onToggleBlockOwner={handleToggleBlockOwner}
+                activeSubPage={activeSubPage}
+              />
+            )}
 
-          {activeModule === 'properties' && (
-            <PropertyManagement 
-              properties={properties}
-              onSelectProperty={(prop) => setSelectedProperty(prop)}
-              onUpdateStatus={handleUpdatePropertyStatus}
-              onToggleFeatured={handleTogglePropertyFeatured}
-              onDeleteProperty={handleDeleteProperty}
-              onAddNewClick={() => setIsAddPropertyOpen(true)}
-              activeSubPage={activeSubPage}
-            />
-          )}
+            {activeModule === 'properties' && (
+              <PropertyManagement 
+                properties={properties}
+                onSelectProperty={(prop) => setSelectedProperty(prop)}
+                onUpdateStatus={handleUpdatePropertyStatus}
+                onToggleFeatured={handleTogglePropertyFeatured}
+                onDeleteProperty={handleDeleteProperty}
+                onAddNewClick={() => setIsAddPropertyOpen(true)}
+                activeSubPage={activeSubPage}
+              />
+            )}
 
-          {activeModule === 'services' && (
-            <ServicesManagement 
-              services={services}
-              onToggleServiceStatus={handleToggleServiceStatus}
-              activeSubPage={activeSubPage}
-            />
-          )}
+            {activeModule === 'services' && (
+              <ServicesManagement 
+                services={services}
+                onToggleServiceStatus={handleToggleServiceStatus}
+                activeSubPage={activeSubPage}
+              />
+            )}
 
-          {activeModule === 'used_items' && (
-            <UsedItemsManagement 
-              usedItems={usedItems}
-              onRemoveItem={handleRemoveUsedItem}
-              onApproveItem={handleApproveUsedItem}
-              activeSubPage={activeSubPage}
-            />
-          )}
+            {activeModule === 'used_items' && (
+              <UsedItemsManagement 
+                usedItems={usedItems}
+                onRemoveItem={handleRemoveUsedItem}
+                onApproveItem={handleApproveUsedItem}
+                activeSubPage={activeSubPage}
+              />
+            )}
 
-          {activeModule === 'finance' && (
-            <FinanceManagement 
-              activeSubPage={activeSubPage}
-            />
-          )}
+            {activeModule === 'finance' && (
+              <FinanceManagement 
+                activeSubPage={activeSubPage}
+              />
+            )}
 
-          {activeModule === 'communication' && (
-            <CommunicationManagement 
-              activeSubPage={activeSubPage}
-            />
-          )}
+            {activeModule === 'communication' && (
+              <CommunicationManagement 
+                activeSubPage={activeSubPage}
+              />
+            )}
 
-          {activeModule === 'reports' && (
-            <ReportsAnalytics 
-              activeSubPage={activeSubPage}
-            />
-          )}
+            {activeModule === 'reports' && (
+              <ReportsAnalytics 
+                activeSubPage={activeSubPage}
+              />
+            )}
 
-          {activeModule === 'settings' && (
-            <SettingsManagement 
-              activeSubPage={activeSubPage}
-            />
-          )}
+            {activeModule === 'settings' && (
+              <SettingsManagement 
+                activeSubPage={activeSubPage}
+              />
+            )}
 
-          {activeModule === 'auth' && (
-            <AuthManagement 
-              activeSubPage={activeSubPage}
-            />
-          )}
+            {activeModule === 'auth' && (
+              <AuthManagement 
+                activeSubPage={activeSubPage}
+              />
+            )}
+          </ErrorBoundary>
         </main>
       </div>
 

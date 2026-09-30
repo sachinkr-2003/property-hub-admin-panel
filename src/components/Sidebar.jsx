@@ -18,7 +18,8 @@ import {
   ChevronRight,
   ChevronDown,
   KeyRound,
-  LogOut
+  LogOut,
+  X
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -31,6 +32,8 @@ export default function Sidebar({
   pendingPropertiesCount = 0,
   openTicketsCount = 0,
   isCollapsed = false,
+  isOpenMobile = false,
+  onCloseMobile,
   onLogout
 }) {
   // Modules & Sub-pages mapped directly from the purple AdminPanel poster
@@ -166,17 +169,33 @@ export default function Sidebar({
   ];
 
   return (
-    <aside className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col bg-[#1e1b4b] text-slate-200 border-r border-[#2e2a72] transition-all duration-200 overflow-x-hidden ${isCollapsed ? 'w-16' : 'w-[270px]'}`}>
+    <aside className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col bg-[#1e1b4b] text-slate-200 border-r border-[#2e2a72] transition-transform duration-200 lg:transition-all overflow-x-hidden ${
+      isOpenMobile ? 'translate-x-0' : '-translate-x-full'
+    } lg:translate-x-0 ${isCollapsed ? 'lg:w-16' : 'lg:w-[270px]'} w-[270px]`}>
       {/* Brand Header matching Poster */}
-      <div className={`p-4 flex items-center gap-2.5 border-b border-[#2e2a72] bg-black/25 shrink-0 ${isCollapsed ? 'justify-center py-3.5 px-0' : ''}`}>
-        <div className="w-8.5 h-8.5 bg-indigo-600 border border-white/20 rounded-[2px] flex items-center justify-center text-white shrink-0">
-          <ShieldCheck size={20} />
-        </div>
-        {!isCollapsed && (
-          <div>
-            <h2 className="text-base font-bold text-white tracking-tight leading-tight">AdminPanel</h2>
-            <p className="text-xs text-indigo-300 font-medium">Complete Platform Control</p>
+      <div className={`p-4 flex items-center justify-between border-b border-[#2e2a72] bg-black/25 shrink-0 ${isCollapsed ? 'lg:justify-center py-3.5 px-0' : ''}`}>
+        <div className="flex items-center gap-2.5">
+          <div className="w-8.5 h-8.5 bg-indigo-600 border border-white/20 rounded-[2px] flex items-center justify-center text-white shrink-0">
+            <ShieldCheck size={20} />
           </div>
+          {(!isCollapsed || isOpenMobile) && (
+            <div>
+              <h2 className="text-base font-bold text-white tracking-tight leading-tight">AdminPanel</h2>
+              <p className="text-xs text-indigo-300 font-medium">Complete Platform Control</p>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Close Button */}
+        {onCloseMobile && (
+          <button 
+            type="button" 
+            onClick={onCloseMobile}
+            className="lg:hidden p-1 text-slate-400 hover:text-white"
+            title="Close Menu"
+          >
+            <X size={18} />
+          </button>
         )}
       </div>
 
@@ -281,6 +300,7 @@ export default function Sidebar({
                         onClick={(e) => {
                           e.stopPropagation();
                           onNavigate(item.id, sub.id);
+                          if (onCloseMobile) onCloseMobile();
                         }}
                       >
                         <span>{sub.label}</span>

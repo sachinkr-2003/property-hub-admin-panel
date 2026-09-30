@@ -41,7 +41,7 @@ export default function PropertyModal({ property, onClose, onUpdateStatus, onTog
       >
         {/* Modal Header */}
         <div className="modal-header">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
             <span className="font-mono font-bold text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-[2px] border border-slate-300">
               {property.id}
             </span>
@@ -52,9 +52,9 @@ export default function PropertyModal({ property, onClose, onUpdateStatus, onTog
               {property.status}
             </span>
             {property.isFeatured && (
-              <span className="badge-pill badge-yellow">★ Featured Boost</span>
+              <span className="badge-pill badge-yellow">★ Featured</span>
             )}
-            <h3 className="text-sm font-bold text-slate-900 ml-1 truncate max-w-sm">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 ml-1 truncate max-w-[120px] sm:max-w-xs">
               {property.title}
             </h3>
           </div>
