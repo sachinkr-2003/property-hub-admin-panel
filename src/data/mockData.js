@@ -141,7 +141,7 @@ export const initialOwners = [
       registry: "LDA Approved Sale Deed #1084/2019"
     },
     propertiesCount: 3,
-    subscriptionPlan: "Owner Gold Pro (₹999/mo)",
+    subscriptionPlan: "100% Free Lifetime",
     status: "Active",
     verifiedAt: "2026-09-28",
     createdAt: "2026-01-10",
@@ -160,7 +160,7 @@ export const initialOwners = [
       registry: "Nagar Nigam Tax Receipt 2025-26"
     },
     propertiesCount: 2,
-    subscriptionPlan: "Owner Standard (₹599/mo)",
+    subscriptionPlan: "100% Free Lifetime",
     status: "Active",
     verifiedAt: "2026-09-20",
     createdAt: "2026-02-15",
@@ -179,7 +179,7 @@ export const initialOwners = [
       registry: "Municipal House Tax Receipt #889"
     },
     propertiesCount: 1,
-    subscriptionPlan: "Owner Basic (Free Trial)",
+    subscriptionPlan: "100% Free Lifetime",
     status: "Active",
     verifiedAt: null,
     createdAt: "2026-09-29",
@@ -198,7 +198,7 @@ export const initialOwners = [
       registry: "Electricity Bill (Consumer #88712)"
     },
     propertiesCount: 1,
-    subscriptionPlan: "Owner Basic (Free Trial)",
+    subscriptionPlan: "100% Free Lifetime",
     status: "Active",
     verifiedAt: null,
     createdAt: "2026-09-30",
@@ -217,7 +217,7 @@ export const initialOwners = [
       registry: "Invalid Power of Attorney"
     },
     propertiesCount: 6,
-    subscriptionPlan: "Agency Suite (Suspended)",
+    subscriptionPlan: "100% Free Lifetime (Blocked)",
     status: "Blocked",
     verifiedAt: null,
     createdAt: "2026-01-20",

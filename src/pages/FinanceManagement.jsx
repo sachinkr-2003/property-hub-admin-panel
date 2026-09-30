@@ -50,9 +50,7 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
   const [newRate, setNewRate] = useState('');
 
   const [subscriptionPlans, setSubscriptionPlans] = useState([
-    { id: 'SUB-SLV', tier: 'Silver Landlord', price: 299, period: '/ month', activeSubscribers: 184, features: 'Up to 3 listings • Standard search rank • Verified Owner badge • Email leads' },
-    { id: 'SUB-GLD', tier: 'Gold Pro Landlord', price: 599, period: '/ month', activeSubscribers: 198, features: 'Up to 10 listings • 2 Free Boosts/mo • Instant tenant lead SMS • Priority review' },
-    { id: 'SUB-ENT', tier: 'Enterprise Builder', price: 999, period: '/ month', activeSubscribers: 54, features: 'Unlimited listings • Top directory carousel • Dedicated manager • 0% take-rate' }
+    { id: 'SUB-FREE', tier: '100% Free Public Launch Plan', price: 0, period: 'Forever Free', activeSubscribers: 542, features: 'Unlimited listings • Zero brokerage • Free direct tenant contacts • Verified Landlord badge • Free search placement • Zero platform fees' }
   ]);
 
   const mockBoostedProperties = [
@@ -186,14 +184,14 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
 
         <div className="classic-card p-3.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Active Subscriptions</span>
-            <div className="w-7 h-7 rounded-[2px] bg-blue-50 text-blue-700 flex items-center justify-center border border-blue-200">
+            <span className="text-xs font-semibold text-slate-500">Free Landlord Memberships</span>
+            <div className="w-7 h-7 rounded-[2px] bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200">
               <CreditCard size={15} />
             </div>
           </div>
-          <div className="text-xl font-bold text-slate-900 mt-2">436 Landlords</div>
-          <div className="text-[11px] text-blue-700 font-semibold mt-1">
-            ₹ 1.45 Lakh recurring MTD
+          <div className="text-xl font-bold text-slate-900 mt-2">542 Landlords</div>
+          <div className="text-[11px] text-emerald-700 font-semibold mt-1">
+            100% Free Lifetime Access
           </div>
         </div>
 
@@ -250,7 +248,7 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
             onClick={() => setActiveTab('subscriptions')}
           >
             <Zap size={13} />
-            <span>Landlord Subscriptions ({subscriptionPlans.length} Tiers)</span>
+            <span>Landlord Subscriptions (100% Free Mode)</span>
           </button>
 
           <button 
@@ -490,55 +488,60 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
       {/* ================= TAB 2: SUBSCRIPTION PLANS ================= */}
       {activeTab === 'subscriptions' && (
         <div className="space-y-4">
+          {/* 100% Free Public Launch Alert Banner */}
+          <div className="bg-emerald-50 border border-emerald-200 rounded-[2px] p-4 flex items-start gap-3">
+            <div className="p-2 bg-emerald-100 rounded-full text-emerald-700 shrink-0">
+              <CheckCircle size={20} />
+            </div>
+            <div className="text-xs">
+              <h4 className="font-bold text-emerald-900 text-sm">🎉 100% Free Public Launch Active</h4>
+              <p className="text-emerald-800 mt-1 leading-relaxed">
+                Property Hub is currently operating in <strong>100% Free Lifetime Mode</strong>. All subscription fees, listing charges, and brokerage commissions are completely waived (₹0) for all landlords, owners, and tenants. No payment gateway or paid checkout is required.
+              </p>
+            </div>
+          </div>
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Landlord Recurring Subscription Tiers</h3>
+              <h3 className="text-sm font-bold text-slate-900">Landlord Membership & Plan Status</h3>
               <p className="text-xs text-slate-500">
-                Monetization plans giving landlords verified trust status, priority inquiry routing, and free listing boosts.
+                All property owners and landlords receive instant unlimited free listings and verified badges with zero charges.
               </p>
             </div>
             <button 
               type="button" 
-              onClick={() => showToast('Subscription pricing synced across mobile apps.', 'success')}
-              className="btn-primary text-xs shrink-0 self-start sm:self-auto"
+              onClick={() => showToast('100% Free tier verified across all client apps.', 'success')}
+              className="btn-primary bg-emerald-700 hover:bg-emerald-800 border-emerald-800 text-xs shrink-0 self-start sm:self-auto"
             >
-              Sync Plans with App Store
+              Verify Free Status Across Apps
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {subscriptionPlans.map((plan) => (
-              <div key={plan.id} className="classic-card p-4 flex flex-col justify-between space-y-3">
+              <div key={plan.id} className="classic-card p-5 flex flex-col justify-between space-y-4 border-2 border-emerald-500">
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <h4 className="text-sm font-bold text-slate-900">{plan.tier}</h4>
-                    <span className="badge-pill badge-green text-[10px]">● Live Tier</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-base font-bold text-slate-900">{plan.tier}</h4>
+                    <span className="badge-pill badge-green text-xs font-bold">● Active (100% Free)</span>
                   </div>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-2xl font-black text-purple-700 font-mono">₹{plan.price}</span>
-                    <span className="text-xs text-slate-500 font-semibold">{plan.period}</span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-3xl font-black text-emerald-700 font-mono">₹{plan.price}</span>
+                    <span className="text-sm text-slate-600 font-bold">/ {plan.period}</span>
                   </div>
-                  <p className="text-xs text-slate-600 mt-2.5 leading-relaxed bg-slate-50 p-2.5 rounded-[2px] border border-slate-300">
+                  <p className="text-xs text-slate-700 mt-3 leading-relaxed bg-emerald-50 p-3 rounded-[2px] border border-emerald-200 font-medium">
                     {plan.features}
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
+                <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs">
                   <div>
-                    <span className="text-slate-500 text-[11px] block">Active Subscribers</span>
-                    <span className="font-bold text-emerald-700 font-mono">{plan.activeSubscribers} Landlords</span>
+                    <span className="text-slate-500 text-[11px] block">Active Free Landlords</span>
+                    <span className="font-bold text-emerald-700 font-mono text-sm">{plan.activeSubscribers} Registered</span>
                   </div>
-                  <button 
-                    type="button"
-                    onClick={() => {
-                      setEditingModel({ id: plan.id, name: plan.tier, rate: `₹${plan.price}` });
-                      setNewRate(`₹${plan.price}`);
-                    }}
-                    className="btn-secondary text-[11px] py-1 px-2.5 flex items-center gap-1"
-                  >
-                    <Edit2 size={11} />
-                    <span>Edit Price</span>
-                  </button>
+                  <span className="text-emerald-700 font-bold bg-emerald-100 px-3 py-1 rounded-[2px]">
+                    No Billing Required
+                  </span>
                 </div>
               </div>
             ))}
