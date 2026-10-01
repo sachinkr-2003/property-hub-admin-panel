@@ -445,7 +445,7 @@ export default function SettingsManagement({ activeSubPage = 'app_settings' }) {
             <div>
               <h3 className="text-sm font-bold text-slate-900">Authorized Administrative Personnel</h3>
               <p className="text-xs text-slate-500">
-                Staff accounts with privileged access to the Property Hub administration portal.
+                Staff accounts with privileged access to the Search administration portal.
               </p>
             </div>
             <button 
@@ -583,7 +583,7 @@ export default function SettingsManagement({ activeSubPage = 'app_settings' }) {
                 </label>
                 <textarea 
                   rows={4}
-                  defaultValue="Property Hub / BachelorHub operates as a direct owner-to-tenant discovery platform. No brokerage fees are collected from genuine bachelors or direct owners. All property listings are subject to LDA/municipal registry check."
+                  defaultValue="Search / BachelorHub operates as a direct owner-to-tenant discovery platform. No brokerage fees are collected from genuine bachelors or direct owners. All property listings are subject to LDA/municipal registry check."
                   className="w-full text-xs border border-slate-300 rounded-[2px] p-2 focus:ring-1 focus:ring-purple-700 focus:border-purple-700 outline-none resize-none"
                 />
               </div>

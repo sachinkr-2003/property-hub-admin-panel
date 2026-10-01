@@ -1,6 +1,6 @@
 import Swal from 'sweetalert2';
 
-// Custom dark styled SweetAlert2 theme matching Property Hub
+// Custom dark styled SweetAlert2 theme matching Search
 const CustomSwal = Swal.mixin({
   background: '#111827',
   color: '#f9fafb',
@@ -48,7 +48,7 @@ export const confirmDelete = async (title = 'Are you sure?', text = 'This action
 };
 
 // Confirmation Dialog for Approvals
-export const confirmApproval = async (title = 'Approve Listing?', text = 'This listing will become publicly visible on Property Hub app.') => {
+export const confirmApproval = async (title = 'Approve Listing?', text = 'This listing will become publicly visible on Search app.') => {
   const result = await CustomSwal.fire({
     title,
     text,

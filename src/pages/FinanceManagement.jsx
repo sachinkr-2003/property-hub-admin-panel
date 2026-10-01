@@ -542,7 +542,7 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
             <div className="text-xs">
               <h4 className="font-bold text-emerald-900 text-sm">🎉 100% Free Public Launch Active</h4>
               <p className="text-emerald-800 mt-1 leading-relaxed">
-                Property Hub is currently operating in <strong>100% Free Lifetime Mode</strong>. All subscription fees, listing charges, and brokerage commissions are completely waived (₹0) for all landlords, owners, and tenants. No payment gateway or paid checkout is required.
+                Search is currently operating in <strong>100% Free Lifetime Mode</strong>. All subscription fees, listing charges, and brokerage commissions are completely waived (₹0) for all landlords, owners, and tenants. No payment gateway or paid checkout is required.
               </p>
             </div>
           </div>
@@ -680,7 +680,7 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
             <div>
               <h3 className="text-sm font-bold text-slate-900">Platform Earning Channels & Monetization Matrix</h3>
               <p className="text-xs text-slate-500">
-                10 distinct monetization streams defined in the Property Hub platform architecture.
+                10 distinct monetization streams defined in the Search platform architecture.
               </p>
             </div>
             <button

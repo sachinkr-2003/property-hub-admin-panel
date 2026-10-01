@@ -137,7 +137,7 @@ export default function LoginPage({ onLogin }) {
           <h2 className="text-xl font-extrabold text-white tracking-tight leading-tight">AdminPanel</h2>
           <p className="text-[11px] text-indigo-200 font-medium mt-0.5">Complete Platform Control • Enterprise Console</p>
           <div className="mt-2.5 inline-block bg-white/10 border border-white/15 py-0.5 px-2.5 rounded-[2px] text-[10px] text-indigo-200">
-            <span>Property Hub & BachelorHub Ecosystem</span>
+            <span>Search & BachelorHub Ecosystem</span>
           </div>
         </div>
 
@@ -429,7 +429,7 @@ export default function LoginPage({ onLogin }) {
       </div>
 
       <div className="mt-4 text-[11px] text-slate-400 text-center tracking-wide">
-        Property Hub & BachelorHub Admin Portal • Version 2.4.1 Production Node • IP Restricted Logging
+        Search & BachelorHub Admin Portal • Version 2.4.1 Production Node • IP Restricted Logging
       </div>
     </div>
   );

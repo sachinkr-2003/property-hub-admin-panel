@@ -502,7 +502,7 @@ export default function CommunicationManagement({ activeSubPage = 'support_ticke
                             PH
                           </div>
                           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
-                            {targetAudience.includes('Owner') ? 'OwnerHub' : 'Property Hub'}
+                            {targetAudience.includes('Owner') ? 'OwnerHub' : 'Search'}
                           </span>
                         </div>
                         <span className="text-[10px] text-slate-500 font-medium">Now</span>

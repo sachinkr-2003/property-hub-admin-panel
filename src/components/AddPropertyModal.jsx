@@ -59,7 +59,7 @@ export default function AddPropertyModal({ isOpen, onClose, onAddProperty }) {
       amenities: ['Power Backup', 'Security', 'Water Supply', 'Lift'],
       furnishing: formData.furnishing,
       targetTenant: formData.targetTenant,
-      description: formData.description || 'Newly added verified listing on Property Hub.',
+      description: formData.description || 'Newly added verified listing on Search.',
       postedAt: new Date().toISOString().split('T')[0],
       status: 'Active',
       reportsCount: 0,

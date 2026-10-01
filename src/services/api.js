@@ -1,5 +1,5 @@
 /**
- * Central API Client Service for Property Hub Admin Panel
+ * Central API Client Service for Search Admin Panel
  * Configured using Vite environment variables (.env)
  */
 
