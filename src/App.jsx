@@ -46,6 +46,7 @@ export default function App() {
 
   // Domain states
   const [metrics, setMetrics] = useState({
+    ...mockDashboardMetrics,
     totalProperties: 0,
     verifiedListings: 0,
     pendingReview: 0,
@@ -146,6 +147,7 @@ export default function App() {
           setUsers(userRes.data.map(u => ({ ...u, id: u.customId || u.id || u._id })));
           setMetrics(prev => ({
             ...prev,
+            totalUsers: userRes.data.length,
             activeUsers: userRes.data.filter(u => u.status === 'Active').length,
           }));
         }

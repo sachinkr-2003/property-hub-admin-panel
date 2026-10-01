@@ -480,22 +480,7 @@ export default function Header({
                   <ChevronRight size={14} className="text-slate-400" />
                 </div>
 
-                <div 
-                  className="flex items-center gap-2.5 p-2.5 border-b border-slate-200 cursor-pointer transition-colors hover:bg-slate-50"
-                  onClick={() => {
-                    if (onNavigate) onNavigate('properties', 'duplicate_check');
-                    setShowNotifications(false);
-                  }}
-                >
-                  <div className="w-7 h-7 rounded-[2px] flex items-center justify-center shrink-0 bg-rose-100 text-rose-700">
-                    <AlertTriangle size={14} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-xs font-semibold text-slate-900">Duplicate Property Pairings (1)</div>
-                    <div className="text-[11px] text-slate-500 leading-tight">PROP-1005 flagged with 94% similarity match</div>
-                  </div>
-                  <ChevronRight size={14} className="text-slate-400" />
-                </div>
+
 
                 {openTicketsCount > 0 && (
                   <div 
