@@ -45,9 +45,70 @@ export default function Header({
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
+  const [adminUser, setAdminUser] = useState({
+    name: 'Aarav Singhania',
+    email: 'aarav@propertyhub.in',
+    role: 'Super Admin',
+    profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
+  });
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
   const notifRef = useRef(null);
   const profileRef = useRef(null);
   const searchRef = useRef(null);
+
+  // Fetch admin profile on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const { default: api } = await import('../services/api.js');
+        const res = await api.get('/auth/me');
+        if (res.success && res.data) {
+          setAdminUser(prev => ({ ...prev, ...res.data }));
+        }
+      } catch (e) {
+        console.warn('Failed to fetch admin profile:', e.message);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // Handle Profile Image Upload
+  const handleProfileImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const { default: api } = await import('../services/api.js');
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const token = localStorage.getItem('property_admin_token');
+      // Step 1: Upload Image
+      const uploadRes = await fetch(api.API_URL + '/upload/single', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      }).then(res => res.json());
+
+      if (uploadRes.success) {
+        const newUrl = uploadRes.data.url;
+        // Step 2: Update Profile
+        const updateRes = await api.patch('/auth/profile', { profileImage: newUrl });
+        if (updateRes.success) {
+          setAdminUser(prev => ({ ...prev, profileImage: newUrl }));
+          showToast('Profile image updated successfully!', 'success');
+        }
+      } else {
+        throw new Error(uploadRes.message);
+      }
+    } catch (e) {
+      showToast(e.message || 'Image upload failed', 'error');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // Close popovers on click outside
   useEffect(() => {
@@ -482,15 +543,15 @@ export default function Header({
           >
             <div className="relative flex">
               <img 
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" 
-                alt="Aarav Singhania" 
+                src={adminUser.profileImage || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"} 
+                alt={adminUser.name} 
                 className="w-7 h-7 rounded-[2px] object-cover border border-slate-300"
               />
               <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white"></span>
             </div>
             <div className="hidden md:flex flex-col items-start text-left">
-              <span className="text-xs font-semibold text-slate-900 leading-tight">Aarav Singhania</span>
-              <span className="text-[10px] font-medium text-indigo-700">Super Admin</span>
+              <span className="text-xs font-semibold text-slate-900 leading-tight">{adminUser.name}</span>
+              <span className="text-[10px] font-medium text-indigo-700">{adminUser.role}</span>
             </div>
             <ChevronRight size={13} className={`text-slate-400 transition-transform duration-150 ${showProfileMenu ? 'rotate-90' : ''}`} />
           </button>
@@ -498,14 +559,31 @@ export default function Header({
           {showProfileMenu && (
             <div className="absolute top-[calc(100%+8px)] right-0 w-[min(260px,calc(100vw-24px))] bg-white border border-slate-300 rounded-[2px] shadow-xl z-50 flex flex-col">
               <div className="p-3 bg-slate-50 border-b border-slate-200">
-                <div className="font-bold text-sm text-slate-900">Aarav Singhania</div>
-                <div className="text-xs text-slate-500">aarav@propertyhub.in</div>
+                <div className="font-bold text-sm text-slate-900">{adminUser.name}</div>
+                <div className="text-xs text-slate-500">{adminUser.email}</div>
                 <div className="text-[11px] font-mono text-indigo-700 mt-0.5">
-                  ID: ADM-ROOT-001 • Master Console
+                  ID: {adminUser.id || 'ADM-ROOT-001'} • Master Console
                 </div>
               </div>
 
               <div className="py-1">
+                {/* Hidden File Input */}
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  onChange={handleProfileImageUpload} 
+                />
+                
+                <div 
+                  className="flex items-center gap-2.5 py-2 px-3 text-xs text-slate-700 cursor-pointer transition-colors hover:bg-slate-100 hover:text-indigo-700"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <User size={14} color="#0284c7" />
+                  <span>{isUploading ? 'Uploading...' : 'Update Profile Picture'}</span>
+                </div>
+
                 <div 
                   className="flex items-center gap-2.5 py-2 px-3 text-xs text-slate-700 cursor-pointer transition-colors hover:bg-slate-100 hover:text-indigo-700"
                   onClick={() => {

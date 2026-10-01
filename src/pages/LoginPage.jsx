@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { showToast } from '../utils/alerts';
 
+import api from '../services/api';
+
 export default function LoginPage({ onLogin }) {
   const [authMode, setAuthMode] = useState('login'); // 'login', 'otp', 'forgot'
   
@@ -38,9 +40,12 @@ export default function LoginPage({ onLogin }) {
 
   // Loading indicator
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Store admin data after successful password verification
+  const [adminData, setAdminData] = useState(null);
 
   // Handle Login submission
-  const handleSubmitLogin = (e) => {
+  const handleSubmitLogin = async (e) => {
     e.preventDefault();
     if (!email || !password) {
       showToast('Please enter both administrative email and password.', 'error');
@@ -48,25 +53,35 @@ export default function LoginPage({ onLogin }) {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await api.post('/auth/admin-login', { email, password });
       setIsLoading(false);
-      // Move to 2FA OTP step as per poster architecture
-      setAuthMode('otp');
-      showToast('Master credentials verified! Enter the 2FA security code.', 'info');
-    }, 500);
+      if (res.success) {
+        setAdminData(res.data);
+        localStorage.setItem('property_admin_token', res.data.token);
+        setAuthMode('otp');
+        showToast('Master credentials verified! Enter the 2FA security code.', 'info');
+      }
+    } catch (error) {
+      setIsLoading(false);
+      showToast(error.message || 'Login failed', 'error');
+    }
   };
 
   // Instant 1-Click Demo Login
-  const handleQuickDemoLogin = () => {
+  const handleQuickDemoLogin = async () => {
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await api.post('/auth/admin-login', { email: 'aarav@propertyhub.in', password: 'admin123' });
       setIsLoading(false);
-      onLogin({
-        name: 'Aarav Singhania',
-        email: 'aarav@propertyhub.in',
-        role: 'Super Administrator'
-      });
-    }, 400);
+      if (res.success) {
+        localStorage.setItem('property_admin_token', res.data.token);
+        onLogin(res.data.admin);
+      }
+    } catch (error) {
+      setIsLoading(false);
+      showToast(error.message || 'Demo Login failed', 'error');
+    }
   };
 
   // Handle OTP digit change
@@ -102,7 +117,7 @@ export default function LoginPage({ onLogin }) {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      onLogin({
+      onLogin(adminData ? adminData.admin : {
         name: 'Aarav Singhania',
         email: 'aarav@propertyhub.in',
         role: 'Super Administrator'
