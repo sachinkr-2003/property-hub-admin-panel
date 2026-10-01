@@ -3,8 +3,8 @@
  * Configured using Vite environment variables (.env)
  */
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://property-hub-backend-j0ea.onrender.com';
+export const API_URL = import.meta.env.VITE_API_URL || 'https://property-hub-backend-j0ea.onrender.com/api';
 export const USE_MOCK_FALLBACK = import.meta.env.VITE_USE_MOCK_FALLBACK !== 'false';
 
 /**
