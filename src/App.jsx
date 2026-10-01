@@ -23,13 +23,7 @@ import LeadsAndVisits from './pages/LeadsAndVisits';
 import RoommateManagement from './pages/RoommateManagement';
 
 import { 
-  mockDashboardMetrics, 
-  initialUsers, 
-  initialOwners, 
-  initialProperties, 
-  initialServices, 
-  initialUsedItems,
-  initialTickets
+  mockDashboardMetrics
 } from './data/mockData';
 import { showToast, confirmDelete } from './utils/alerts';
 
@@ -51,13 +45,20 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Domain states
-  const [metrics, setMetrics] = useState(mockDashboardMetrics);
-  const [users, setUsers] = useState(initialUsers);
-  const [owners, setOwners] = useState(initialOwners);
-  const [properties, setProperties] = useState(initialProperties);
-  const [services, setServices] = useState(initialServices);
-  const [usedItems, setUsedItems] = useState(initialUsedItems);
-  const [tickets, setTickets] = useState(initialTickets);
+  const [metrics, setMetrics] = useState({
+    totalProperties: 0,
+    verifiedListings: 0,
+    pendingReview: 0,
+    registeredOwners: 0,
+    kycPending: 0,
+    activeUsers: 0
+  });
+  const [users, setUsers] = useState([]);
+  const [owners, setOwners] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [services, setServices] = useState([]);
+  const [usedItems, setUsedItems] = useState([]);
+  const [tickets, setTickets] = useState([]);
   const [visits, setVisits] = useState([]);
   const [roommates, setRoommates] = useState([]);
 
