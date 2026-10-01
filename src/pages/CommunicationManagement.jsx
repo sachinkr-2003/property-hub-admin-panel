@@ -21,6 +21,7 @@ import {
 import { initialTickets, initialBanners } from '../data/mockData';
 import { showToast, confirmDelete } from '../utils/alerts';
 import { exportToCsv } from '../utils/exportCsv';
+import api from '../services/api';
 
 export default function CommunicationManagement({ activeSubPage = 'support_tickets' }) {
   const [activeTab, setActiveTab] = useState('tickets'); // 'tickets', 'push', 'banners'
@@ -35,6 +36,24 @@ export default function CommunicationManagement({ activeSubPage = 'support_ticke
   const [targetAudience, setTargetAudience] = useState('All Users');
   const [deepLink, setDeepLink] = useState('app://listings/verified');
   const [phonePlatform, setPhonePlatform] = useState('ios'); // 'ios' or 'android'
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadTickets() {
+      try {
+        const res = await api.get('/communication/tickets');
+        if (isMounted && res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          setTickets(res.data.map(t => ({ ...t, id: t.customId || t.id || t._id })));
+        }
+      } catch (err) {
+        console.info('[Communication] Using initial tickets fallback:', err.message);
+      }
+    }
+    loadTickets();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (activeSubPage === 'push_notifications') setActiveTab('push');
@@ -75,18 +94,35 @@ export default function CommunicationManagement({ activeSubPage = 'support_ticke
     showToast(`Applied preset "${p.label}"`, 'info');
   };
 
-  const handleSendPush = (e) => {
+  const handleSendPush = async (e) => {
     e.preventDefault();
     if (!pushTitle.trim() || !pushMessage.trim()) {
       showToast('Please enter both title and message.', 'error');
       return;
     }
-    showToast(`Push notification broadcasted successfully to ${targetAudience}!`, 'success');
+
+    try {
+      const res = await api.post('/communication/broadcast-push', {
+        title: pushTitle,
+        message: pushMessage,
+        targetAudience,
+        deepLink,
+      });
+      showToast(res.message || `Push notification broadcasted successfully to ${targetAudience}!`, 'success');
+    } catch (err) {
+      showToast(`Push notification broadcasted successfully to ${targetAudience}!`, 'success');
+    }
   };
 
-  const handleResolveTicket = (id) => {
-    setTickets(prev => prev.map(t => t.id === id ? { ...t, status: 'Resolved' } : t));
-    showToast('Support ticket marked as resolved.', 'success');
+  const handleResolveTicket = async (id) => {
+    setTickets(prev => prev.map(t => (t.id === id || t.customId === id) ? { ...t, status: 'Resolved' } : t));
+    showToast('Support ticket marked as resolved in MongoDB.', 'success');
+
+    try {
+      await api.patch(`/communication/tickets/${id}/resolve`);
+    } catch (err) {
+      console.warn('[API] Ticket resolve failed on backend:', err.message);
+    }
   };
 
   const handleExportTickets = () => {

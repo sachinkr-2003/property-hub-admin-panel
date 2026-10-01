@@ -19,6 +19,8 @@ import ReportsAnalytics from './pages/ReportsAnalytics';
 import SettingsManagement from './pages/SettingsManagement';
 import AuthManagement from './pages/AuthManagement';
 import LoginPage from './pages/LoginPage';
+import LeadsAndVisits from './pages/LeadsAndVisits';
+import RoommateManagement from './pages/RoommateManagement';
 
 import { 
   mockDashboardMetrics, 
@@ -56,6 +58,8 @@ export default function App() {
   const [services, setServices] = useState(initialServices);
   const [usedItems, setUsedItems] = useState(initialUsedItems);
   const [tickets, setTickets] = useState(initialTickets);
+  const [visits, setVisits] = useState([]);
+  const [roommates, setRoommates] = useState([]);
 
   // Modals
   const [selectedProperty, setSelectedProperty] = useState(null);
@@ -156,6 +160,46 @@ export default function App() {
         }
       } catch (err) {
         console.info('[Live Sync] Using initial ticket fallback:', err.message);
+      }
+
+      // 5. Fetch Services Providers from MongoDB
+      try {
+        const srvRes = await api.get('/services');
+        if (isMounted && srvRes?.data && Array.isArray(srvRes.data) && srvRes.data.length > 0) {
+          setServices(srvRes.data.map(s => ({ ...s, id: s.customId || s.id || s._id })));
+        }
+      } catch (err) {
+        console.info('[Live Sync] Using initial services fallback:', err.message);
+      }
+
+      // 6. Fetch Used Marketplace Items from MongoDB
+      try {
+        const itemRes = await api.get('/used-items');
+        if (isMounted && itemRes?.data && Array.isArray(itemRes.data) && itemRes.data.length > 0) {
+          setUsedItems(itemRes.data.map(i => ({ ...i, id: i.customId || i.id || i._id })));
+        }
+      } catch (err) {
+        console.info('[Live Sync] Using initial used items fallback:', err.message);
+      }
+
+      // 7. Fetch Site Visits & Leads from MongoDB
+      try {
+        const visitRes = await api.get('/visits');
+        if (isMounted && visitRes?.data && Array.isArray(visitRes.data) && visitRes.data.length > 0) {
+          setVisits(visitRes.data.map(v => ({ ...v, id: v.customId || v.id || v._id })));
+        }
+      } catch (err) {
+        console.info('[Live Sync] Using initial visit fallback:', err.message);
+      }
+
+      // 8. Fetch Roommate Requests from MongoDB
+      try {
+        const rmRes = await api.get('/roommates');
+        if (isMounted && rmRes?.data && Array.isArray(rmRes.data) && rmRes.data.length > 0) {
+          setRoommates(rmRes.data.map(r => ({ ...r, id: r.customId || r.id || r._id })));
+        }
+      } catch (err) {
+        console.info('[Live Sync] Using initial roommate fallback:', err.message);
       }
     }
 
@@ -295,26 +339,97 @@ export default function App() {
     }
   };
 
-  // Services Handlers
-  const handleToggleServiceStatus = (id) => {
+  // Services Handlers (Optimistic UI + Live Backend Sync)
+  const handleToggleServiceStatus = async (id) => {
     setServices(prev => prev.map(s => {
-      if (s.id === id) {
+      if (s.id === id || s.customId === id) {
         const nextStatus = s.status === 'Active' ? 'Suspended' : 'Active';
         showToast(`Service partner is now ${nextStatus}`, nextStatus === 'Active' ? 'success' : 'warning');
         return { ...s, status: nextStatus };
       }
       return s;
     }));
+
+    try {
+      await api.patch(`/services/${id}/status`);
+    } catch (err) {
+      console.warn('[API] Service status update failed on backend:', err.message);
+    }
   };
 
-  // Used Items Handlers
-  const handleRemoveUsedItem = (id) => {
-    setUsedItems(prev => prev.filter(item => item.id !== id));
+  // Used Items Handlers (Optimistic UI + Live Backend Sync)
+  const handleRemoveUsedItem = async (id) => {
+    const isConfirmed = await confirmDelete(
+      'Remove Marketplace Item?',
+      `Are you sure you want to permanently delete item ${id} from database?`
+    );
+    if (isConfirmed) {
+      setUsedItems(prev => prev.filter(item => item.id !== id && item.customId !== id));
+      showToast('Item purged successfully from MongoDB.', 'success');
+
+      try {
+        await api.delete(`/used-items/${id}`);
+      } catch (err) {
+        console.warn('[API] Used item deletion failed on backend:', err.message);
+      }
+    }
   };
 
-  const handleApproveUsedItem = (id) => {
-    setUsedItems(prev => prev.map(item => item.id === id ? { ...item, reported: false, status: 'Active' } : item));
-    showToast('Report cleared, item restored to marketplace.', 'success');
+  const handleApproveUsedItem = async (id) => {
+    setUsedItems(prev => prev.map(item => (item.id === id || item.customId === id) ? { ...item, reported: false, status: 'Active' } : item));
+    showToast('Report cleared, item restored to active marketplace in MongoDB.', 'success');
+
+    try {
+      await api.patch(`/used-items/${id}/approve`);
+    } catch (err) {
+      console.warn('[API] Used item approval failed on backend:', err.message);
+    }
+  };
+
+  // Site Visit Handlers (Optimistic UI + Live Backend Sync)
+  const handleUpdateVisitStatus = async (id, newStatus) => {
+    setVisits(prev => prev.map(v => (v.id === id || v.customId === id) ? { ...v, status: newStatus } : v));
+    showToast(`Visit slot updated to ${newStatus}`, newStatus === 'Completed' ? 'success' : 'info');
+
+    try {
+      await api.patch(`/visits/${id}/status`, { status: newStatus });
+    } catch (err) {
+      console.warn('[API] Visit status update failed on backend:', err.message);
+    }
+  };
+
+  const handleDeleteVisit = async (id) => {
+    setVisits(prev => prev.filter(v => v.id !== id && v.customId !== id));
+    showToast('Visit record deleted from MongoDB.', 'success');
+
+    try {
+      await api.delete(`/visits/${id}`);
+    } catch (err) {
+      console.warn('[API] Visit deletion failed on backend:', err.message);
+    }
+  };
+
+  // Roommate Handlers (Optimistic UI + Live Backend Sync)
+  const handleUpdateRoommateStatus = async (id, newStatus) => {
+    setRoommates(prev => prev.map(r => (r.id === id || r.customId === id) ? { ...r, status: newStatus } : r));
+    showToast(`Roommate post is now ${newStatus}`, newStatus === 'Active' ? 'success' : 'warning');
+
+    try {
+      await api.patch(`/roommates/${id}/status`, { status: newStatus });
+    } catch (err) {
+      console.warn('[API] Roommate status update failed on backend:', err.message);
+    }
+  };
+
+  const handleDeleteRoommate = async (id) => {
+    setRoommates(prev => prev.filter(r => r.id !== id && r.customId !== id));
+    showToast('Roommate post deleted from MongoDB.', 'success');
+
+    try {
+      await api.delete(`/roommates/${id}`);
+    } catch (err) {
+      console.warn('[API] Roommate deletion failed on backend:', err.message);
+    }
   };
 
   const pendingKycCount = owners.filter(o => o.kycStatus === 'Pending').length;
@@ -324,8 +439,10 @@ export default function App() {
   const moduleTitles = {
     dashboard: { title: 'Dashboard', subtitle: 'Platform KPI Metrics, Verification Queues & Revenue Summary' },
     users: { title: 'User Management', subtitle: 'All Users, Roles, Suspension Controls & Abuse Reports' },
+    roommates: { title: 'Roommate Finder', subtitle: 'Bachelor Co-living Requests, Rent Split & Flatmate Preferences' },
     owners: { title: 'Owner Management', subtitle: 'All Landlords, Title Deed KYC Verification & Trust Badges' },
     properties: { title: 'Property Management', subtitle: 'Catalog, Pending Moderation, Duplicate Check & Approvals' },
+    visits: { title: 'Leads & Scheduled Visits', subtitle: 'Digital Visit Passes, Tenant Verification & Owner Slots' },
     services: { title: 'Services Management', subtitle: 'Tiffin, Laundry, Maid, Maintenance & Relocation Providers' },
     used_items: { title: 'Used Items Marketplace', subtitle: 'Furniture & Appliances Moderation, Take-Down & Disputes' },
     finance: { title: 'Finance & Subscriptions', subtitle: 'Razorpay Live Payments, 10 Earning Models & Revenue Tracking' },
@@ -425,6 +542,15 @@ export default function App() {
               />
             )}
 
+            {activeModule === 'roommates' && (
+              <RoommateManagement 
+                roommates={roommates}
+                onUpdateRoommateStatus={handleUpdateRoommateStatus}
+                onDeleteRoommate={handleDeleteRoommate}
+                activeSubPage={activeSubPage}
+              />
+            )}
+
             {activeModule === 'owners' && (
               <OwnerManagement 
                 owners={owners}
@@ -444,6 +570,15 @@ export default function App() {
                 onToggleFeatured={handleTogglePropertyFeatured}
                 onDeleteProperty={handleDeleteProperty}
                 onAddNewClick={() => setIsAddPropertyOpen(true)}
+                activeSubPage={activeSubPage}
+              />
+            )}
+
+            {activeModule === 'visits' && (
+              <LeadsAndVisits 
+                visits={visits}
+                onUpdateVisitStatus={handleUpdateVisitStatus}
+                onDeleteVisit={handleDeleteVisit}
                 activeSubPage={activeSubPage}
               />
             )}

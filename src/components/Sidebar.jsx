@@ -19,7 +19,9 @@ import {
   ChevronDown,
   KeyRound,
   LogOut,
-  X
+  X,
+  CalendarCheck,
+  Users2
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -62,6 +64,16 @@ export default function Sidebar({
       ]
     },
     {
+      id: 'roommates',
+      label: 'Roommate Finder (3)',
+      icon: Users2,
+      subPages: [
+        { id: 'all_roommates', label: 'All Co-Living Requests' },
+        { id: 'male_roommates', label: 'Male Flatmates' },
+        { id: 'female_roommates', label: 'Female Flatmates' }
+      ]
+    },
+    {
       id: 'owners',
       label: 'Owner Management (6)',
       icon: UserCheck,
@@ -87,6 +99,16 @@ export default function Sidebar({
         { id: 'duplicate_check', label: 'Duplicate Detection Engine' },
         { id: 'reported_properties', label: 'Reported Properties' },
         { id: 'suspended_properties', label: 'Suspended / Expired' }
+      ]
+    },
+    {
+      id: 'visits',
+      label: 'Site Visits & Leads (3)',
+      icon: CalendarCheck,
+      subPages: [
+        { id: 'all_visits', label: 'All Scheduled Visits' },
+        { id: 'confirmed_visits', label: 'Confirmed Slots' },
+        { id: 'completed_visits', label: 'Completed Visits' }
       ]
     },
     {

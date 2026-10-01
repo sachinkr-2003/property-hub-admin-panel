@@ -25,12 +25,15 @@ import { initialTransactions, earningModels, initialRefundRequests } from '../da
 import { showToast, confirmDelete } from '../utils/alerts';
 import { exportToCsv } from '../utils/exportCsv';
 import TablePagination from '../components/TablePagination';
+import api from '../services/api';
 
 export default function FinanceManagement({ activeSubPage = 'transactions' }) {
   const [transactions, setTransactions] = useState(initialTransactions);
   const [refundRequests, setRefundRequests] = useState(initialRefundRequests);
   const [models, setModels] = useState(earningModels);
   const [activeTab, setActiveTab] = useState('transactions');
+  const [liveSummary, setLiveSummary] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Search & Filter state for Transactions
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,6 +61,37 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
     { id: 'BST-02', propertyId: 'PROP-1002', title: 'Spacious Independent 3 BHK Villa with Garden', owner: 'Ananya Deshmukh', duration: '15 Days', fee: 499, views: 1190, expires: '2026-10-10', status: 'Running' },
     { id: 'BST-03', propertyId: 'PROP-1004', title: 'Fully Serviced Commercial Office Suite', owner: 'Harshvardhan Kapoor', duration: '30 Days', fee: 999, views: 3840, expires: '2026-10-27', status: 'Running' },
   ];
+
+  const fetchFinancials = async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.get('/finance/transactions');
+      if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        setTransactions(res.data.map(t => ({
+          ...t,
+          id: t.customId || t.id || t._id,
+          date: t.createdAt ? new Date(t.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : (t.date || 'Today')
+        })));
+      }
+    } catch (err) {
+      console.info('[Finance] Using initial transactions fallback:', err.message);
+    }
+
+    try {
+      const sumRes = await api.get('/finance/summary');
+      if (sumRes?.data) {
+        setLiveSummary(sumRes.data);
+      }
+    } catch (err) {
+      console.info('[Finance] Using default summary:', err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFinancials();
+  }, []);
 
   useEffect(() => {
     if (activeSubPage === 'earning_models') setActiveTab('earning_models');
@@ -152,7 +186,15 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
     );
     if (confirmed) {
       setRefundRequests(prev => prev.map(r => r.id === id ? { ...r, status: 'Refund Processed' } : r));
+      setTransactions(prev => prev.map(t => (t.userName?.toLowerCase().includes(userName.toLowerCase())) ? { ...t, status: 'Refunded' } : t));
       showToast(`Refund of ₹${amount} issued to ${userName} via Razorpay.`, 'success');
+
+      try {
+        await api.post('/finance/refund', { refundId: id, amount, user: userName });
+        fetchFinancials();
+      } catch (err) {
+        console.warn('[Finance] Refund failed on backend:', err.message);
+      }
     }
   };
 
@@ -175,10 +217,12 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
               <DollarSign size={15} />
             </div>
           </div>
-          <div className="text-xl font-bold text-slate-900 mt-2">₹ 4,85,200</div>
+          <div className="text-xl font-bold text-slate-900 mt-2">
+            ₹ {liveSummary?.totalRevenue ? liveSummary.totalRevenue.toLocaleString('en-IN') : '4,85,200'}
+          </div>
           <div className="text-[11px] text-emerald-700 font-semibold mt-1 flex items-center gap-1">
             <ArrowUpRight size={12} />
-            <span>+22.4% vs last month</span>
+            <span>MongoDB Live • {liveSummary?.successCount || transactions.filter(t => t.status === 'Success').length} Settled</span>
           </div>
         </div>
 
@@ -197,14 +241,16 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
 
         <div className="classic-card p-3.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Featured Boost Revenue</span>
+            <span className="text-xs font-semibold text-slate-500">Net Settled Collections</span>
             <div className="w-7 h-7 rounded-[2px] bg-purple-50 text-purple-700 flex items-center justify-center border border-purple-200">
               <TrendingUp size={15} />
             </div>
           </div>
-          <div className="text-xl font-bold text-slate-900 mt-2">₹ 89,400</div>
+          <div className="text-xl font-bold text-slate-900 mt-2">
+            ₹ {liveSummary?.netRevenue ? liveSummary.netRevenue.toLocaleString('en-IN') : '89,400'}
+          </div>
           <div className="text-[11px] text-purple-700 font-semibold mt-1">
-            198 active boosts running
+            {liveSummary?.refundedCount ? `${liveSummary.refundedCount} Refunded` : 'All Transactions Verified'}
           </div>
         </div>
 

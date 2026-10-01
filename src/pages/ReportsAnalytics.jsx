@@ -19,10 +19,33 @@ import {
 import { mockRevenueTrends } from '../data/mockData';
 import { showToast } from '../utils/alerts';
 import { exportToCsv } from '../utils/exportCsv';
+import api from '../services/api';
 
 export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' }) {
   const [activeTab, setActiveTab] = useState('platform');
   const [dateRange, setDateRange] = useState('month'); // 'week', 'month', 'quarter', 'fy2026'
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchAnalytics() {
+      try {
+        const res = await api.get('/reports/analytics');
+        if (isMounted && res?.data) {
+          setAnalytics(res.data);
+        }
+      } catch (e) {
+        console.warn('[ReportsAnalytics] Failed to fetch live analytics:', e.message);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    fetchAnalytics();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (activeSubPage === 'user_reports_analytics') setActiveTab('user');
@@ -31,14 +54,14 @@ export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' 
     else setActiveTab('platform');
   }, [activeSubPage]);
 
-  const userDemographics = [
+  const userDemographics = analytics?.userDemographics || [
     { cohort: 'Student Bachelors (Colleges / Universities)', count: '4,630', percent: '55.0%', avgRent: '₹ 8,500 / mo', retention: '92%', preferredLocalities: 'Gomti Nagar, Jankipuram' },
     { cohort: 'Working Professionals (IT / Corporate)', count: '2,526', percent: '30.0%', avgRent: '₹ 14,200 / mo', retention: '96%', preferredLocalities: 'Vibhuti Khand, Indira Nagar' },
     { cohort: 'Nuclear Families', count: '842', percent: '10.0%', avgRent: '₹ 22,000 / mo', retention: '98%', preferredLocalities: 'Aliganj, Mahanagar' },
     { cohort: 'Commercial / Co-working Offices', count: '422', percent: '5.0%', avgRent: '₹ 45,000 / mo', retention: '89%', preferredLocalities: 'Hazratganj, Shaheed Path' },
   ];
 
-  const propertyVelocity = [
+  const propertyVelocity = analytics?.propertyVelocity || [
     { type: '1 BHK / Studio Flat', avgDaysToRent: '4.2 Days', demandIndex: 'Very High (18 inquiries/listing)', supplyCount: 320, rentalYield: '6.2%' },
     { type: '2 BHK Residential Apartment', avgDaysToRent: '8.6 Days', demandIndex: 'High (14 inquiries/listing)', supplyCount: 480, rentalYield: '5.4%' },
     { type: 'PG / Co-living Beds', avgDaysToRent: '3.1 Days', demandIndex: 'Extremely High (24 inquiries/bed)', supplyCount: 260, rentalYield: '8.8%' },
@@ -182,12 +205,14 @@ export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         <div className="classic-card p-3.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Monthly User Inflow</span>
+            <span className="text-xs font-semibold text-slate-500">Registered Platform Users</span>
             <div className="w-7 h-7 rounded-[2px] bg-blue-50 text-blue-700 flex items-center justify-center border border-blue-200">
               <Users size={15} />
             </div>
           </div>
-          <div className="text-xl font-bold text-slate-900 mt-2">+840 Users/mo</div>
+          <div className="text-xl font-bold text-slate-900 mt-2">
+            {analytics?.kpis?.totalUsers !== undefined ? `${analytics.kpis.totalUsers} Active Users` : '+840 Users/mo'}
+          </div>
           <div className="text-[11px] text-emerald-700 font-semibold mt-1 flex items-center gap-1">
             <ArrowUpRight size={12} />
             <span>65% Bachelors • 35% Families</span>
@@ -196,14 +221,16 @@ export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' 
 
         <div className="classic-card p-3.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Listing Turnaround (Median)</span>
+            <span className="text-xs font-semibold text-slate-500">Verified Properties</span>
             <div className="w-7 h-7 rounded-[2px] bg-purple-50 text-purple-700 flex items-center justify-center border border-purple-200">
               <Home size={15} />
             </div>
           </div>
-          <div className="text-xl font-bold text-slate-900 mt-2">9.4 Days</div>
+          <div className="text-xl font-bold text-slate-900 mt-2">
+            {analytics?.kpis?.verifiedProperties !== undefined ? `${analytics.kpis.verifiedProperties} Verified Listings` : '12 Verified Listings'}
+          </div>
           <div className="text-[11px] text-purple-700 font-semibold mt-1">
-            From verified post to lease signed
+            {analytics?.kpis?.totalProperties !== undefined ? `Out of ${analytics.kpis.totalProperties} total inventory` : 'Direct Owner verified'}
           </div>
         </div>
 
@@ -214,7 +241,9 @@ export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' 
               <ShieldCheck size={15} />
             </div>
           </div>
-          <div className="text-xl font-bold text-slate-900 mt-2">96.2% Clean</div>
+          <div className="text-xl font-bold text-slate-900 mt-2">
+            {analytics?.kpis?.verifiedOwnerRate || '96.2% Clean'}
+          </div>
           <div className="text-[11px] text-emerald-700 font-semibold mt-1">
             Zero fraudulent deposits detected
           </div>
@@ -222,15 +251,17 @@ export default function ReportsAnalytics({ activeSubPage = 'platform_analytics' 
 
         <div className="classic-card p-3.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Annual Gross Run Rate</span>
+            <span className="text-xs font-semibold text-slate-500">Live Gross Revenue</span>
             <div className="w-7 h-7 rounded-[2px] bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-200">
               <TrendingUp size={15} />
             </div>
           </div>
-          <div className="text-xl font-bold text-slate-900 mt-2">₹ 58.2 Lakh</div>
+          <div className="text-xl font-bold text-slate-900 mt-2">
+            {analytics?.kpis?.totalRevenue !== undefined ? `₹ ${Number(analytics.kpis.totalRevenue).toLocaleString('en-IN')}` : '₹ 58.2 Lakh'}
+          </div>
           <div className="text-[11px] text-amber-700 font-semibold mt-1 flex items-center gap-1">
             <ArrowUpRight size={12} />
-            <span>+24% projected Q4</span>
+            <span>{analytics?.kpis?.totalTransactions !== undefined ? `${analytics.kpis.totalTransactions} Total Transactions` : '+24% projected Q4'}</span>
           </div>
         </div>
       </div>
