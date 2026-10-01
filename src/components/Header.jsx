@@ -12,12 +12,15 @@ import {
   ShieldCheck, 
   AlertTriangle, 
   KeyRound, 
+  Lock,
   Settings, 
   LogOut, 
   X,
   FileCheck,
   CreditCard,
-  MessageSquare
+  MessageSquare,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { showToast } from '../utils/alerts';
 
@@ -53,6 +56,12 @@ export default function Header({
   });
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Change Credentials Modal state
+  const [showCredModal, setShowCredModal] = useState(false);
+  const [credForm, setCredForm] = useState({ currentPassword: '', newEmail: '', newPassword: '' });
+  const [showCredPass, setShowCredPass] = useState({ current: false, newPass: false });
+  const [credLoading, setCredLoading] = useState(false);
 
   const notifRef = useRef(null);
   const profileRef = useRef(null);
@@ -107,6 +116,39 @@ export default function Header({
       showToast(e.message || 'Image upload failed', 'error');
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // Handle admin credentials update
+  const handleUpdateCredentials = async (e) => {
+    e.preventDefault();
+    if (!credForm.currentPassword) {
+      showToast('Current password is required', 'error');
+      return;
+    }
+    if (!credForm.newEmail && !credForm.newPassword) {
+      showToast('Enter at least a new email or new password', 'error');
+      return;
+    }
+    setCredLoading(true);
+    try {
+      const { default: api } = await import('../services/api.js');
+      const payload = { currentPassword: credForm.currentPassword };
+      if (credForm.newEmail) payload.newEmail = credForm.newEmail;
+      if (credForm.newPassword) payload.newPassword = credForm.newPassword;
+      const res = await api.patch('/auth/admin-update-credentials', payload);
+      if (res.success) {
+        // Update stored token and local admin state
+        localStorage.setItem('property_admin_token', res.data.token);
+        setAdminUser(prev => ({ ...prev, email: res.data.admin.email }));
+        showToast('Credentials updated successfully!', 'success');
+        setShowCredModal(false);
+        setCredForm({ currentPassword: '', newEmail: '', newPassword: '' });
+      }
+    } catch (err) {
+      showToast(err.message || 'Failed to update credentials', 'error');
+    } finally {
+      setCredLoading(false);
     }
   };
 
@@ -237,6 +279,7 @@ export default function Header({
   const hasSearchResults = matchingProperties.length > 0 || matchingOwners.length > 0 || matchingUsers.length > 0;
 
   return (
+    <>
     <header className="h-[62px] min-h-[62px] bg-white/98 backdrop-blur-md border-b border-slate-300 flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-4.5 sticky top-0 z-50 shadow-xs">
       {/* Left: Sidebar Toggle + Structured Breadcrumbs */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
@@ -572,23 +615,12 @@ export default function Header({
                 <div 
                   className="flex items-center gap-2.5 py-2 px-3 text-xs text-slate-700 cursor-pointer transition-colors hover:bg-slate-100 hover:text-indigo-700"
                   onClick={() => {
-                    if (onNavigate) onNavigate('auth', 'admin_login');
+                    setShowCredModal(true);
                     setShowProfileMenu(false);
                   }}
                 >
-                  <ShieldCheck size={14} color="#4338ca" />
-                  <span>Admin Session Details</span>
-                </div>
-
-                <div 
-                  className="flex items-center gap-2.5 py-2 px-3 text-xs text-slate-700 cursor-pointer transition-colors hover:bg-slate-100 hover:text-indigo-700"
-                  onClick={() => {
-                    if (onNavigate) onNavigate('auth', 'otp_verification');
-                    setShowProfileMenu(false);
-                  }}
-                >
-                  <KeyRound size={14} color="#059669" />
-                  <span>2FA Security Configuration</span>
+                  <Lock size={14} color="#4338ca" />
+                  <span>Change Email / Password</span>
                 </div>
 
                 <div 
@@ -629,5 +661,106 @@ export default function Header({
         </div>
       </div>
     </header>
+
+    {/* ───────── Change Credentials Modal ───────── */}
+    {showCredModal && (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" style={{ background: 'rgba(15,10,50,0.55)', backdropFilter: 'blur(4px)' }}>
+        <div className="w-full max-w-[420px] bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-100">
+          {/* Modal Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <Lock size={16} className="text-indigo-700" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Change Credentials</h3>
+                <p className="text-[11px] text-slate-500">Update your login email or password</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors border-none bg-transparent cursor-pointer"
+              onClick={() => { setShowCredModal(false); setCredForm({ currentPassword: '', newEmail: '', newPassword: '' }); }}
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Modal Form */}
+          <form onSubmit={handleUpdateCredentials} className="p-6 flex flex-col gap-4">
+            {/* Current Password */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Current Password <span className="text-rose-500">*</span></label>
+              <div className="relative flex items-center">
+                <Lock size={14} className="absolute left-3 text-slate-400 pointer-events-none" />
+                <input
+                  type={showCredPass.current ? 'text' : 'password'}
+                  value={credForm.currentPassword}
+                  onChange={e => setCredForm(p => ({ ...p, currentPassword: e.target.value }))}
+                  placeholder="Enter your current password"
+                  required
+                  className="w-full py-2.5 pl-9 pr-9 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg outline-none transition-all focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/10 placeholder:text-slate-400"
+                />
+                <button type="button" className="absolute right-3 text-slate-400 hover:text-slate-700 bg-transparent border-none cursor-pointer" onClick={() => setShowCredPass(p => ({ ...p, current: !p.current }))}>
+                  {showCredPass.current ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-100 pt-3">
+              <p className="text-[11px] text-slate-500 mb-3">Leave blank if you don't want to change that field.</p>
+
+              {/* New Email */}
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">New Email Address</label>
+                <input
+                  type="email"
+                  value={credForm.newEmail}
+                  onChange={e => setCredForm(p => ({ ...p, newEmail: e.target.value }))}
+                  placeholder={adminUser.email}
+                  className="w-full py-2.5 px-3 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg outline-none transition-all focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/10 placeholder:text-slate-400"
+                />
+              </div>
+
+              {/* New Password */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">New Password</label>
+                <div className="relative flex items-center">
+                  <input
+                    type={showCredPass.newPass ? 'text' : 'password'}
+                    value={credForm.newPassword}
+                    onChange={e => setCredForm(p => ({ ...p, newPassword: e.target.value }))}
+                    placeholder="Min. 6 characters"
+                    className="w-full py-2.5 pl-3 pr-9 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg outline-none transition-all focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/10 placeholder:text-slate-400"
+                  />
+                  <button type="button" className="absolute right-3 text-slate-400 hover:text-slate-700 bg-transparent border-none cursor-pointer" onClick={() => setShowCredPass(p => ({ ...p, newPass: !p.newPass }))}>
+                    {showCredPass.newPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 mt-2">
+              <button
+                type="button"
+                className="flex-1 py-2.5 px-4 text-xs font-semibold rounded-lg border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 transition-all cursor-pointer"
+                onClick={() => { setShowCredModal(false); setCredForm({ currentPassword: '', newEmail: '', newPassword: '' }); }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={credLoading}
+                className="flex-1 py-2.5 px-4 text-xs font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-md shadow-indigo-600/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 cursor-pointer border-none"
+              >
+                {credLoading ? <><RefreshCw size={13} className="animate-spin" /> Updating...</> : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+  </>
   );
 }
