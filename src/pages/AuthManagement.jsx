@@ -85,9 +85,9 @@ export default function AuthManagement({ activeSubPage = 'admin_login' }) {
                 </tr>
                 <tr>
                   <td style={{ fontWeight: 600, background: '#f8fafc' }}>JWT Algorithm</td>
-                  <td>RS256 (2048-bit Private Key)</td>
-                  <td style={{ fontWeight: 600, background: '#f8fafc' }}>2FA Verification</td>
-                  <td><span className="badge-pill badge-green">✓ Active via Firebase SMS</span></td>
+                  <td>HS256 (Self-Hosted Secret Key)</td>
+                  <td style={{ fontWeight: 600, background: '#f8fafc' }}>Auth Mode</td>
+                  <td><span className="badge-pill badge-green">✓ Self-Hosted (No 3rd Party)</span></td>
                 </tr>
               </tbody>
             </table>
@@ -105,38 +105,30 @@ export default function AuthManagement({ activeSubPage = 'admin_login' }) {
         </div>
       )}
 
-      {/* Subpage 2: 2FA / OTP Verification Setting */}
+      {/* Subpage 2: Direct Password Authentication Setting */}
       {activeTab === 'otp_verification' && (
         <div className="classic-card">
           <div className="card-topbar">
             <div>
-              <h3>Two-Factor Authentication (Firebase Cloud SMS)</h3>
-              <p>Require OTP confirmation on registered master mobile when modifying critical records</p>
+              <h3>Admin Direct Login Security</h3>
+              <p>Self-hosted master authentication without external third-party dependencies</p>
             </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: '#f8fafc', borderRadius: 'var(--radius-square)', border: '1px solid var(--border-cell)', marginBottom: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Smartphone size={24} color="#4338ca" />
+              <ShieldCheck size={24} color="#4338ca" />
               <div>
-                <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>Two-Factor Mobile Authentication</div>
-                <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>6-digit OTP sent to +91 98390 XXXXX for financial payouts, admin role creation, and property deletions</div>
+                <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>Direct Master Authentication</div>
+                <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>100% self-hosted password verification directly against MongoDB (Zero external SMS or OAuth needed)</div>
               </div>
             </div>
 
-            <input 
-              type="checkbox" 
-              checked={twoFactorEnabled} 
-              onChange={(e) => {
-                setTwoFactorEnabled(e.target.checked);
-                showToast(`2FA is now ${e.target.checked ? 'Enabled' : 'Disabled'}`, e.target.checked ? 'success' : 'warning');
-              }}
-              style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-            />
+            <span className="badge-pill badge-green">Active & Standalone</span>
           </div>
 
           <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-            Security Notice: Disabling 2FA will require confirmation email sent to master account. Payout approvals over ₹ 10,000 will continue to require secondary confirmation.
+            Notice: Admin login is managed internally with salted bcrypt hashing and JWT tokens. No third-party services (like Firebase, Twilio, or Google) are required to access this console.
           </div>
         </div>
       )}
