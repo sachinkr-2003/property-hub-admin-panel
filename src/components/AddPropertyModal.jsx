@@ -120,6 +120,8 @@ export default function AddPropertyModal({ isOpen, onClose, onAddProperty }) {
                 >
                   <option value="Flat">Flat / Apartment</option>
                   <option value="House">Independent House / Villa</option>
+                  <option value="Plot">Plot / Residential Land</option>
+                  <option value="Room">Single Room / 1 RK</option>
                   <option value="PG">Hostel / PG</option>
                   <option value="Office">Commercial Office</option>
                 </select>

@@ -31,6 +31,24 @@ export default function KycModal({ kycItem, onClose, onApprove, onReject }) {
   const registry = kycItem.documents?.registry || 'LDA Registered Sale Deed (Book 1, Vol 1420)';
   const isVerified = kycItem.kycStatus === 'Verified' || kycItem.status === 'Verified';
 
+  const resolveDocUrl = (url) => {
+    if (!url || typeof url !== 'string') return '';
+    const trimmed = url.trim();
+    if (trimmed.startsWith('data:') || trimmed.startsWith('blob:') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    const base = 'https://property-hub-backend-j0ea.onrender.com';
+    return trimmed.startsWith('/') ? `${base}${trimmed}` : `${base}/${trimmed}`;
+  };
+
+  const uploadedDocUrl = 
+    activeDocTab === 'aadhaar' ? (kycItem.aadhaarUrl || kycItem.documents?.aadhaarUrl) :
+    activeDocTab === 'pan' ? (kycItem.panUrl || kycItem.documents?.panUrl) :
+    (kycItem.registryUrl || kycItem.deedDocUrl || kycItem.documents?.registryUrl);
+
+  const realUrl = resolveDocUrl(uploadedDocUrl);
+  const isPdf = realUrl.toLowerCase().includes('.pdf') || realUrl.startsWith('data:application/pdf');
+
   const docSamples = {
     aadhaar: {
       title: 'Government Aadhaar Card (Masked UID)',
@@ -216,58 +234,113 @@ export default function KycModal({ kycItem, onClose, onApprove, onReject }) {
             </div>
 
             {/* Document Preview Canvas */}
-            <div className="bg-slate-900 p-4 min-h-[280px] max-h-[380px] overflow-auto flex items-center justify-center relative select-none">
-              <div 
-                className="transition-transform duration-200 shadow-2xl bg-white border border-slate-700 rounded-[2px] overflow-hidden max-w-lg w-full"
-                style={{ 
-                  transform: `scale(${zoomLevel}) rotate(${rotation}deg)`,
-                  transformOrigin: 'center center'
-                }}
-              >
-                {/* Simulated Scanned Document Header */}
-                <div className="bg-slate-100 border-b border-slate-300 p-2.5 flex items-center justify-between text-[11px]">
-                  <div className="flex items-center gap-1.5 font-bold text-slate-800">
-                    <FileText size={14} className="text-purple-700" />
-                    <span>{currentDoc.title}</span>
+            <div className="bg-slate-900 p-4 min-h-[280px] max-h-[420px] overflow-auto flex items-center justify-center relative select-none">
+              {realUrl ? (
+                isPdf ? (
+                  <div className="w-full max-w-xl bg-slate-950 p-2 border border-slate-700 rounded-[2px] space-y-2">
+                    <div className="flex items-center justify-between text-xs text-white bg-slate-800 p-2 rounded-[2px]">
+                      <span className="font-bold flex items-center gap-1.5 text-rose-400">
+                        <FileText size={14} />
+                        <span>Uploaded PDF Document ({activeDocTab.toUpperCase()})</span>
+                      </span>
+                      <button
+                        type="button"
+                        className="btn-classic text-xs py-0.5 px-2 bg-purple-600 hover:bg-purple-700 text-white border-purple-700 flex items-center gap-1 cursor-pointer"
+                        onClick={() => window.open(realUrl, '_blank')}
+                      >
+                        <ExternalLink size={12} />
+                        <span>Open PDF in New Tab</span>
+                      </button>
+                    </div>
+                    <iframe 
+                      src={realUrl} 
+                      className="w-full h-80 rounded-[2px] bg-white border border-slate-700" 
+                      title="Uploaded Document PDF"
+                    />
                   </div>
-                  <span className="badge-pill badge-green text-[10px]">{currentDoc.badge}</span>
-                </div>
+                ) : (
+                  <div 
+                    className="transition-transform duration-200 shadow-2xl bg-white border border-slate-700 rounded-[2px] overflow-hidden max-w-lg w-full p-2 flex flex-col items-center"
+                    style={{ 
+                      transform: `scale(${zoomLevel}) rotate(${rotation}deg)`,
+                      transformOrigin: 'center center'
+                    }}
+                  >
+                    <div className="w-full flex items-center justify-between text-xs bg-slate-100 p-2 border-b border-slate-300 mb-2">
+                      <span className="font-bold text-slate-800">{currentDoc.title}</span>
+                      <button
+                        type="button"
+                        className="btn-classic text-xs py-0.5 px-2 text-purple-700 border-purple-300 hover:bg-purple-50 flex items-center gap-1 cursor-pointer"
+                        onClick={() => window.open(realUrl, '_blank')}
+                      >
+                        <ExternalLink size={12} />
+                        <span>Open Full</span>
+                      </button>
+                    </div>
+                    <img 
+                      src={realUrl} 
+                      alt={currentDoc.title} 
+                      className="max-h-72 w-auto object-contain rounded-[2px]"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = currentDoc.sampleUrl;
+                      }}
+                    />
+                  </div>
+                )
+              ) : (
+                <div 
+                  className="transition-transform duration-200 shadow-2xl bg-white border border-slate-700 rounded-[2px] overflow-hidden max-w-lg w-full"
+                  style={{ 
+                    transform: `scale(${zoomLevel}) rotate(${rotation}deg)`,
+                    transformOrigin: 'center center'
+                  }}
+                >
+                  {/* Simulated Scanned Document Header */}
+                  <div className="bg-slate-100 border-b border-slate-300 p-2.5 flex items-center justify-between text-[11px]">
+                    <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                      <FileText size={14} className="text-purple-700" />
+                      <span>{currentDoc.title}</span>
+                    </div>
+                    <span className="badge-pill badge-green text-[10px]">{currentDoc.badge}</span>
+                  </div>
 
-                <div className="p-3 bg-white">
-                  <div className="relative border border-dashed border-slate-300 p-3 bg-slate-50 rounded-[2px]">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Issuing Authority</div>
-                        <div className="text-xs font-semibold text-slate-800">{currentDoc.issuer}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Document ID</div>
-                        <div className="text-xs font-mono font-bold text-purple-900 bg-purple-50 px-1.5 py-0.5 border border-purple-200 rounded-[2px]">
-                          {currentDoc.docNumber}
+                  <div className="p-3 bg-white">
+                    <div className="relative border border-dashed border-slate-300 p-3 bg-slate-50 rounded-[2px]">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Issuing Authority</div>
+                          <div className="text-xs font-semibold text-slate-800">{currentDoc.issuer}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Document ID</div>
+                          <div className="text-xs font-mono font-bold text-purple-900 bg-purple-50 px-1.5 py-0.5 border border-purple-200 rounded-[2px]">
+                            {currentDoc.docNumber}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="mt-3 flex items-center gap-3">
-                      <div className="w-16 h-20 bg-slate-200 border border-slate-300 rounded-[2px] flex items-center justify-center text-slate-400 text-[10px] font-mono">
-                        [ID PHOTO]
+                      <div className="mt-3 flex items-center gap-3">
+                        <div className="w-16 h-20 bg-slate-200 border border-slate-300 rounded-[2px] flex items-center justify-center text-slate-400 text-[10px] font-mono">
+                          [ID PHOTO]
+                        </div>
+                        <div className="flex-1 text-[11px] space-y-1">
+                          <div><span className="text-slate-500">Holder:</span> <strong className="text-slate-800">{ownerName}</strong></div>
+                          <div><span className="text-slate-500">Category:</span> <span className="text-slate-700">{currentDoc.type}</span></div>
+                          <div><span className="text-slate-500">Audit Status:</span> <span className="text-emerald-700 font-semibold">{currentDoc.status}</span></div>
+                          <div><span className="text-slate-500">Scan Timestamp:</span> <span className="font-mono text-slate-600">{currentDoc.date}</span></div>
+                        </div>
                       </div>
-                      <div className="flex-1 text-[11px] space-y-1">
-                        <div><span className="text-slate-500">Holder:</span> <strong className="text-slate-800">{ownerName}</strong></div>
-                        <div><span className="text-slate-500">Category:</span> <span className="text-slate-700">{currentDoc.type}</span></div>
-                        <div><span className="text-slate-500">Audit Status:</span> <span className="text-emerald-700 font-semibold">{currentDoc.status}</span></div>
-                        <div><span className="text-slate-500">Scan Timestamp:</span> <span className="font-mono text-slate-600">{currentDoc.date}</span></div>
-                      </div>
-                    </div>
 
-                    {/* Official Stamp Watermark */}
-                    <div className="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-500">
-                      <span className="font-mono">DIGITALLY SIGNED VIA C-DAC e-GOV GATEWAY</span>
-                      <span className="text-emerald-700 font-bold">● TAMPER-PROOF HASH VALID</span>
+                      {/* Official Stamp Watermark */}
+                      <div className="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-500">
+                        <span className="font-mono">DIGITALLY SIGNED VIA C-DAC e-GOV GATEWAY</span>
+                        <span className="text-emerald-700 font-bold">● TAMPER-PROOF HASH VALID</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

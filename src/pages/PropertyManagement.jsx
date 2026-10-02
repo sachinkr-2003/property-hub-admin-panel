@@ -27,11 +27,19 @@ import { initialDuplicatePairs } from '../data/mockData';
 import { exportToCsv } from '../utils/exportCsv';
 import TablePagination from '../components/TablePagination';
 
+const FALLBACK_PROPERTY_IMG = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80';
+
 const resolveImgUrl = (url) => {
-  if (!url) return 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80';
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  if (url.startsWith('/')) return `https://property-hub-backend-j0ea.onrender.com${url}`;
-  return `https://property-hub-backend-j0ea.onrender.com/${url}`;
+  if (!url || typeof url !== 'string') return FALLBACK_PROPERTY_IMG;
+  const trimmed = url.trim();
+  if (!trimmed) return FALLBACK_PROPERTY_IMG;
+  if (trimmed.startsWith('data:image/') || trimmed.startsWith('blob:')) return trimmed;
+  if (trimmed.startsWith('file:') || trimmed.includes(':\\') || trimmed.startsWith('/data/') || trimmed.startsWith('/storage/')) {
+    return FALLBACK_PROPERTY_IMG;
+  }
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  const base = 'https://property-hub-backend-j0ea.onrender.com';
+  return trimmed.startsWith('/') ? `${base}${trimmed}` : `${base}/${trimmed}`;
 };
 
 export default function PropertyManagement({ 
@@ -204,7 +212,12 @@ export default function PropertyManagement({
                     <span className="badge-pill badge-green">✓ Original Verified Listing</span>
                     <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '0.78rem' }}>{original?.id}</span>
                   </div>
-                  <img src={original?.images[0]} alt={original?.title} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: 'var(--radius-square)', marginBottom: '8px' }} />
+                  <img 
+                    src={resolveImgUrl(original?.images?.[0])} 
+                    alt={original?.title} 
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_PROPERTY_IMG; }}
+                    style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: 'var(--radius-square)', marginBottom: '8px' }} 
+                  />
                   <h4 style={{ fontSize: '0.9rem', fontWeight: 700 }}>{original?.title}</h4>
                   <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>{original?.address}, {original?.locality}</div>
                   <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#059669', marginTop: '6px' }}>₹ {original?.price?.toLocaleString('en-IN')} {original?.priceUnit}</div>
@@ -217,7 +230,12 @@ export default function PropertyManagement({
                     <span className="badge-pill badge-red">⚠ Flagged Duplicate Listing</span>
                     <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '0.78rem' }}>{duplicate?.id}</span>
                   </div>
-                  <img src={duplicate?.images[0]} alt={duplicate?.title} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: 'var(--radius-square)', marginBottom: '8px' }} />
+                  <img 
+                    src={resolveImgUrl(duplicate?.images?.[0])} 
+                    alt={duplicate?.title} 
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_PROPERTY_IMG; }}
+                    style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: 'var(--radius-square)', marginBottom: '8px' }} 
+                  />
                   <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#9f1239' }}>{duplicate?.title}</h4>
                   <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>{duplicate?.address}, {duplicate?.locality}</div>
                   <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#059669', marginTop: '6px' }}>₹ {duplicate?.price?.toLocaleString('en-IN')} {duplicate?.priceUnit}</div>
@@ -556,8 +574,10 @@ export default function PropertyManagement({
             }}
           >
             <option value="All">All Property Types</option>
+            <option value="Plot">Plots / Lands (Plot)</option>
             <option value="Flat">Flats / Apartments</option>
             <option value="House">Independent Houses / Villas</option>
+            <option value="Room">Rooms / 1 RK</option>
             <option value="PG">Hostels & PGs</option>
             <option value="Office">Commercial Offices</option>
           </select>
@@ -670,7 +690,7 @@ export default function PropertyManagement({
                   <th>Owner Name</th>
                   <th>Safety & Checks</th>
                   <th>Status</th>
-                  <th>Actions</th>
+                  <th className="sticky right-0 bg-slate-100 z-10 border-l border-slate-300 min-w-[120px] text-center shadow-[-2px_0_4px_rgba(0,0,0,0.04)]">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -692,6 +712,10 @@ export default function PropertyManagement({
                         <img 
                           src={resolveImgUrl(p.images?.[0])} 
                           alt={p.title} 
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = FALLBACK_PROPERTY_IMG;
+                          }}
                           style={{ width: '44px', height: '34px', borderRadius: 'var(--radius-square)', objectFit: 'cover' }}
                         />
                         <div>
@@ -732,18 +756,41 @@ export default function PropertyManagement({
                       </div>
                     </td>
                     <td>
-                      <span className={`badge-pill ${
-                        p.status === 'Active' ? 'badge-green' :
-                        p.status === 'Pending Verification' ? 'badge-yellow' : 'badge-red'
-                      }`}>
-                        {p.status}
-                      </span>
+                      <div className="flex flex-col gap-1 items-start">
+                        <span className={`badge-pill ${
+                          p.status === 'Active' ? 'badge-green' :
+                          p.status === 'Pending Verification' ? 'badge-yellow' : 'badge-red'
+                        }`}>
+                          {p.status}
+                        </span>
+                        {p.status === 'Pending Verification' && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <button 
+                              type="button" 
+                              className="btn-classic text-[11px] py-0.5 px-2 bg-emerald-600 text-white border-emerald-700 hover:bg-emerald-700 font-bold flex items-center gap-1 shadow-xs cursor-pointer rounded-[2px]"
+                              onClick={() => handleApprove(p)}
+                              title="Verify and Approve listing live"
+                            >
+                              <CheckCircle size={12} />
+                              <span>Verify Now</span>
+                            </button>
+                            <button 
+                              type="button" 
+                              className="btn-classic text-[11px] py-0.5 px-1.5 bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 flex items-center gap-1 font-semibold cursor-pointer rounded-[2px]"
+                              onClick={() => handleReject(p)}
+                              title="Reject listing"
+                            >
+                              <XCircle size={12} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </td>
-                    <td>
+                    <td className="sticky right-0 bg-white z-10 border-l border-slate-200 shadow-[-2px_0_4px_rgba(0,0,0,0.04)]">
                       <div className="table-actions">
                         <button 
                           className="btn-icon-sm" 
-                          title="Inspect Details"
+                          title="Inspect Details & Deed"
                           onClick={() => onSelectProperty(p)}
                         >
                           <Eye size={14} />
@@ -819,6 +866,10 @@ export default function PropertyManagement({
                 <img 
                   src={resolveImgUrl(p.images?.[0])} 
                   alt={p.title} 
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = FALLBACK_PROPERTY_IMG;
+                  }}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                 />
                 <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '4px' }}>

@@ -24,7 +24,8 @@ import RoommateManagement from './pages/RoommateManagement';
 
 import { 
   mockDashboardMetrics,
-  initialUsers
+  initialUsers,
+  initialProperties
 } from './data/mockData';
 import { showToast, confirmDelete } from './utils/alerts';
 
@@ -45,23 +46,26 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Domain states
-  const [metrics, setMetrics] = useState({
-    ...mockDashboardMetrics,
-    totalProperties: 0,
-    verifiedListings: 0,
-    pendingReview: 0,
-    registeredOwners: 0,
-    kycPending: 0,
-    activeUsers: 0
-  });
   const [users, setUsers] = useState(initialUsers || []);
   const [owners, setOwners] = useState([]);
-  const [properties, setProperties] = useState([]);
+  const [properties, setProperties] = useState(initialProperties || []);
   const [services, setServices] = useState([]);
   const [usedItems, setUsedItems] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [visits, setVisits] = useState([]);
   const [roommates, setRoommates] = useState([]);
+
+  // Update metrics to reflect initialProperties on first render
+  const [metrics, setMetrics] = useState({
+    ...mockDashboardMetrics,
+    totalProperties: (initialProperties || []).length,
+    verifiedListings: (initialProperties || []).filter(p => p.isVerified).length,
+    pendingReview: (initialProperties || []).filter(p => p.status === 'Pending Verification').length,
+    registeredOwners: 0,
+    kycPending: 0,
+    activeUsers: (initialUsers || []).filter(u => u.status === 'Active').length,
+    totalUsers: (initialUsers || []).length
+  });
 
   // Modals
   const [selectedProperty, setSelectedProperty] = useState(null);

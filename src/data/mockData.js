@@ -127,8 +127,245 @@ export const initialUsers = [
 export const initialUserReports = [];
 export const initialOwners = [];
 export const initialKycLogs = [];
-export const initialProperties = [];
-export const initialDuplicatePairs = [];
+export const initialProperties = [
+  {
+    id: "PROP-1001",
+    customId: "PROP-1001",
+    title: "2 BHK Furnished Flat in Gomti Nagar",
+    type: "Flat",
+    bhk: 2,
+    areaSqFt: 1050,
+    furnishing: "Fully Furnished",
+    price: 16000,
+    priceUnit: "/month",
+    locality: "Gomti Nagar",
+    city: "Lucknow",
+    address: "Vibhuti Khand, Gomti Nagar",
+    ownerName: "Rakesh Gupta",
+    ownerPhone: "+91 98100 11234",
+    status: "Active",
+    isVerified: true,
+    isFeatured: true,
+    isDuplicate: false,
+    reportsCount: 0,
+    images: [
+      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80"
+    ],
+    deedDocument: "Sale Deed - Vibhuti Khand.pdf",
+    description: "Spacious 2 BHK in prime Gomti Nagar locality. Gated society with 24/7 security, gym, and power backup.",
+    amenities: ["AC", "WiFi", "Geyser", "Parking", "CCTV"],
+    createdAt: "2026-09-10"
+  },
+  {
+    id: "PROP-1002",
+    customId: "PROP-1002",
+    title: "1 BHK Semi-Furnished Flat in Indira Nagar",
+    type: "Flat",
+    bhk: 1,
+    areaSqFt: 650,
+    furnishing: "Semi Furnished",
+    price: 9500,
+    priceUnit: "/month",
+    locality: "Indira Nagar",
+    city: "Lucknow",
+    address: "Near Eldeco Appartment, Sec-C, Indira Nagar",
+    ownerName: "Sunita Srivastava",
+    ownerPhone: "+91 93150 44210",
+    status: "Pending Verification",
+    isVerified: false,
+    isFeatured: false,
+    isDuplicate: false,
+    reportsCount: 0,
+    images: [
+      "https://images.unsplash.com/photo-1560448075-bb485b067938?auto=format&fit=crop&w=800&q=80"
+    ],
+    deedDocument: "Registry Paper - Indira Nagar.pdf",
+    description: "Cozy 1 BHK on 2nd floor. Ideal for working professionals and bachelors. Metro connectivity nearby.",
+    amenities: ["Geyser", "Fan", "Parking"],
+    createdAt: "2026-09-18"
+  },
+  {
+    id: "PROP-1003",
+    customId: "PROP-1003",
+    title: "3 BHK Independent House in Aliganj",
+    type: "House",
+    bhk: 3,
+    areaSqFt: 1800,
+    furnishing: "Unfurnished",
+    price: 22000,
+    priceUnit: "/month",
+    locality: "Aliganj",
+    city: "Lucknow",
+    address: "Sector-F, Aliganj",
+    ownerName: "Pradeep Sharma",
+    ownerPhone: "+91 98990 77654",
+    status: "Active",
+    isVerified: true,
+    isFeatured: false,
+    isDuplicate: false,
+    reportsCount: 0,
+    images: [
+      "https://images.unsplash.com/photo-1598228723793-52759bba239c?auto=format&fit=crop&w=800&q=80"
+    ],
+    deedDocument: "Fard Badar - Aliganj.pdf",
+    description: "Ground floor 3 BHK with private garden. Family preferred. All utilities connected.",
+    amenities: ["Garden", "Parking", "Water Tank", "Power Backup"],
+    createdAt: "2026-09-05"
+  },
+  {
+    id: "PROP-1004",
+    customId: "PROP-1004",
+    title: "PG for Boys - Hazratganj",
+    type: "PG",
+    bhk: 0,
+    areaSqFt: 120,
+    furnishing: "Fully Furnished",
+    price: 5500,
+    priceUnit: "/month",
+    locality: "Hazratganj",
+    city: "Lucknow",
+    address: "Mahatma Gandhi Marg, Hazratganj",
+    ownerName: "Meena Joshi",
+    ownerPhone: "+91 94000 33210",
+    status: "Active",
+    isVerified: false,
+    isFeatured: false,
+    isDuplicate: false,
+    reportsCount: 2,
+    images: [
+      "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80"
+    ],
+    deedDocument: null,
+    description: "4-sharing PG in Hazratganj. Includes mess food, WiFi, and laundry service.",
+    amenities: ["WiFi", "Mess", "CCTV", "Laundry"],
+    createdAt: "2026-09-22"
+  },
+  {
+    id: "PROP-1005",
+    customId: "PROP-1005",
+    title: "Residential Plot – 100 Sq.Yd in Janakipuram",
+    type: "Plot",
+    bhk: 0,
+    areaSqFt: 900,
+    furnishing: "NA",
+    price: 1800000,
+    priceUnit: "(One-time sale)",
+    locality: "Janakipuram",
+    city: "Lucknow",
+    address: "Janakipuram Vistar, Sec-B",
+    ownerName: "Anjali Tiwari",
+    ownerPhone: "+91 99500 12388",
+    status: "Pending Verification",
+    isVerified: false,
+    isFeatured: false,
+    isDuplicate: false,
+    reportsCount: 0,
+    images: [
+      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80"
+    ],
+    deedDocument: "LDA Registry Deed.pdf",
+    description: "LDA approved residential plot in Janakipuram Vistar. Freeholder land with clear title.",
+    amenities: ["Corner Plot", "LDA Approved", "Road Access"],
+    createdAt: "2026-09-29"
+  },
+  {
+    id: "PROP-1006",
+    customId: "PROP-1006",
+    title: "Single Room for Working Professional – Mahanagar",
+    type: "Room",
+    bhk: 0,
+    areaSqFt: 180,
+    furnishing: "Semi Furnished",
+    price: 4000,
+    priceUnit: "/month",
+    locality: "Mahanagar",
+    city: "Lucknow",
+    address: "Near Mahanagar Police Station",
+    ownerName: "Vijay Kumar",
+    ownerPhone: "+91 87050 99321",
+    status: "Suspended",
+    isVerified: false,
+    isFeatured: false,
+    isDuplicate: true,
+    duplicateOf: "PROP-1004",
+    reportsCount: 4,
+    images: [
+      "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=800&q=80"
+    ],
+    deedDocument: null,
+    description: "Ground floor single attached room with basic furniture. Bachelor / working professional preferred.",
+    amenities: ["WiFi", "Bathroom Attached"],
+    createdAt: "2026-09-15"
+  },
+  {
+    id: "PROP-1007",
+    customId: "PROP-1007",
+    title: "2 BHK Flat near LuLu Mall, Amausi",
+    type: "Flat",
+    bhk: 2,
+    areaSqFt: 980,
+    furnishing: "Semi Furnished",
+    price: 13500,
+    priceUnit: "/month",
+    locality: "Amausi",
+    city: "Lucknow",
+    address: "Shaheed Path, Near LuLu Mall",
+    ownerName: "Dhiraj Pandey",
+    ownerPhone: "+91 90000 32145",
+    status: "Active",
+    isVerified: true,
+    isFeatured: true,
+    isDuplicate: false,
+    reportsCount: 0,
+    images: [
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80"
+    ],
+    deedDocument: "Registry - Shaheed Path.pdf",
+    description: "Premium 2 BHK near LuLu Mall on Shaheed Path. Metro corridor, international airport proximity.",
+    amenities: ["AC", "Modular Kitchen", "Security", "Parking", "Power Backup"],
+    createdAt: "2026-09-30"
+  },
+  {
+    id: "PROP-1008",
+    customId: "PROP-1008",
+    title: "Office Space 500 sqft – Hazratganj Commercial",
+    type: "Office",
+    bhk: 0,
+    areaSqFt: 500,
+    furnishing: "Fully Furnished",
+    price: 28000,
+    priceUnit: "/month",
+    locality: "Hazratganj",
+    city: "Lucknow",
+    address: "Shahnajaf Road, Hazratganj",
+    ownerName: "Arvind Khanna",
+    ownerPhone: "+91 98100 55678",
+    status: "Active",
+    isVerified: true,
+    isFeatured: false,
+    isDuplicate: false,
+    reportsCount: 0,
+    images: [
+      "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80"
+    ],
+    deedDocument: "Commercial Registry - Hazratganj.pdf",
+    description: "Prime commercial office on Shahnajaf Road. High footfall area, ground floor, 2 dedicated parking spots.",
+    amenities: ["AC", "Reception", "Parking", "WiFi", "Conference Room"],
+    createdAt: "2026-09-20"
+  }
+];
+export const initialDuplicatePairs = [
+  {
+    id: "DUP-001",
+    originalId: "PROP-1004",
+    flaggedId: "PROP-1006",
+    similarityScore: "🔴 96% Similarity Score",
+    addressMatch: "Address and room description 94% textually identical (NLP + geohash match)",
+    detectedAt: "2026-10-01"
+  }
+];
+
 export const bachelorCategories = [];
 export const initialServices = [];
 export const initialServiceComplaints = [];
