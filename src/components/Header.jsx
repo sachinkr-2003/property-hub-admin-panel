@@ -23,6 +23,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { showToast } from '../utils/alerts';
+import api from '../services/api.js';
 
 export default function Header({ 
   activeModule = 'dashboard', 
@@ -41,21 +42,32 @@ export default function Header({
   users = [],
   onSelectProperty,
   onSelectKyc,
-  onLogout
+  onLogout,
+  adminUser: externalAdminUser,
+  onUpdateAdminUser
 }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const [adminUser, setAdminUser] = useState({
-    name: 'Aarav Singhania',
-    email: 'aarav@propertyhub.in',
-    role: 'Super Admin',
-    profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
+  const [adminUser, setAdminUser] = useState(() => {
+    return externalAdminUser || {
+      name: 'Super Admin',
+      email: 'admin@propertyhub.in',
+      role: 'Super Admin',
+      profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
+    };
   });
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Synchronize if parent passes down updated adminUser
+  useEffect(() => {
+    if (externalAdminUser) {
+      setAdminUser(externalAdminUser);
+    }
+  }, [externalAdminUser]);
 
   // Change Credentials Modal state
   const [showCredModal, setShowCredModal] = useState(false);
@@ -67,14 +79,16 @@ export default function Header({
   const profileRef = useRef(null);
   const searchRef = useRef(null);
 
-  // Fetch admin profile on mount
+  // Fetch admin profile on mount if not already populated
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const { default: api } = await import('../services/api.js');
         const res = await api.get('/auth/me');
         if (res.success && res.data) {
           setAdminUser(prev => ({ ...prev, ...res.data }));
+          if (onUpdateAdminUser) {
+            onUpdateAdminUser(res.data);
+          }
         }
       } catch (e) {
         console.warn('Failed to fetch admin profile:', e.message);
@@ -85,37 +99,50 @@ export default function Header({
 
   // Handle Profile Image Upload
   const handleProfileImageUpload = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select an image file (PNG, JPG, WEBP)', 'error');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('Image size exceeds 10MB limit', 'error');
+      return;
+    }
+
     setIsUploading(true);
     try {
-      const { default: api } = await import('../services/api.js');
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      const token = localStorage.getItem('property_admin_token');
-      // Step 1: Upload Image
-      const uploadRes = await fetch(api.API_URL + '/upload/single', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData
-      }).then(res => res.json());
+      // Step 1: Upload Image via Centralized API Service
+      const uploadRes = await api.upload('/upload/single', file);
 
-      if (uploadRes.success) {
-        const newUrl = uploadRes.data.url;
-        // Step 2: Update Profile
-        const updateRes = await api.patch('/auth/profile', { profileImage: newUrl });
-        if (updateRes.success) {
-          setAdminUser(prev => ({ ...prev, profileImage: newUrl }));
-          showToast('Profile image updated successfully!', 'success');
+      const newUrl = uploadRes?.data?.url;
+      if (!uploadRes?.success || !newUrl) {
+        throw new Error(uploadRes?.message || 'Failed to upload image');
+      }
+
+      // Step 2: Update Profile in Database
+      const updateRes = await api.patch('/auth/profile', { profileImage: newUrl });
+      if (updateRes?.success) {
+        const updatedUser = { ...adminUser, profileImage: newUrl };
+        setAdminUser(updatedUser);
+        if (onUpdateAdminUser) {
+          onUpdateAdminUser(updatedUser);
         }
+        window.dispatchEvent(new CustomEvent('admin_profile_updated', { detail: updatedUser }));
+        showToast('Profile image updated successfully!', 'success');
       } else {
-        throw new Error(uploadRes.message);
+        throw new Error(updateRes?.message || 'Failed to save profile image');
       }
     } catch (e) {
-      showToast(e.message || 'Image upload failed', 'error');
+      console.error('[Profile Image Update Error]:', e);
+      showToast(e.message || 'Image upload failed. Please try again.', 'error');
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -132,7 +159,6 @@ export default function Header({
     }
     setCredLoading(true);
     try {
-      const { default: api } = await import('../services/api.js');
       const payload = { currentPassword: credForm.currentPassword };
       if (credForm.newEmail) payload.newEmail = credForm.newEmail;
       if (credForm.newPassword) payload.newPassword = credForm.newPassword;
@@ -140,7 +166,11 @@ export default function Header({
       if (res.success) {
         // Update stored token and local admin state
         localStorage.setItem('property_admin_token', res.data.token);
-        setAdminUser(prev => ({ ...prev, email: res.data.admin.email }));
+        const updated = { ...adminUser, email: res.data.admin.email };
+        setAdminUser(updated);
+        if (onUpdateAdminUser) {
+          onUpdateAdminUser(updated);
+        }
         showToast('Credentials updated successfully!', 'success');
         setShowCredModal(false);
         setCredForm({ currentPassword: '', newEmail: '', newPassword: '' });

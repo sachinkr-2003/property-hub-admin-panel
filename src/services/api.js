@@ -43,6 +43,53 @@ export async function apiRequest(endpoint, options = {}) {
 }
 
 /**
+ * Single File or FormData Upload Wrapper
+ */
+export async function uploadFile(endpoint, fileOrFormData, fieldName = 'file') {
+  let body;
+  if (fileOrFormData instanceof FormData) {
+    body = fileOrFormData;
+  } else {
+    body = new FormData();
+    body.append(fieldName, fileOrFormData);
+  }
+
+  const endpointPath = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = endpoint.startsWith('http') ? endpoint : `${API_URL}${endpointPath}`;
+
+  const headers = {};
+  const token = localStorage.getItem('property_admin_token');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body,
+    });
+
+    const text = await response.text();
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      throw new Error(`Upload server returned non-JSON response (${response.status}): ${text.slice(0, 100) || 'Empty response'}`);
+    }
+
+    if (!response.ok) {
+      throw new Error(data?.message || `Upload failed with status ${response.status}`);
+    }
+
+    return data;
+  } catch (error) {
+    console.warn(`[API Service] POST ${endpoint} (upload) failed:`, error.message);
+    throw error;
+  }
+}
+
+/**
  * Quick API Resource Methods
  */
 export const api = {
@@ -51,7 +98,10 @@ export const api = {
   patch: (endpoint, body) => apiRequest(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
   put: (endpoint, body) => apiRequest(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
   delete: (endpoint) => apiRequest(endpoint, { method: 'DELETE' }),
-  health: () => apiRequest('/health', { method: 'GET' })
+  health: () => apiRequest('/health', { method: 'GET' }),
+  upload: (endpoint, fileOrFormData, fieldName) => uploadFile(endpoint, fileOrFormData, fieldName),
+  API_URL,
+  API_BASE_URL,
 };
 
 export default api;

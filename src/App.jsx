@@ -23,7 +23,8 @@ import LeadsAndVisits from './pages/LeadsAndVisits';
 import RoommateManagement from './pages/RoommateManagement';
 
 import { 
-  mockDashboardMetrics
+  mockDashboardMetrics,
+  initialUsers
 } from './data/mockData';
 import { showToast, confirmDelete } from './utils/alerts';
 
@@ -53,7 +54,7 @@ export default function App() {
     kycPending: 0,
     activeUsers: 0
   });
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState(initialUsers || []);
   const [owners, setOwners] = useState([]);
   const [properties, setProperties] = useState([]);
   const [services, setServices] = useState([]);
@@ -67,12 +68,45 @@ export default function App() {
   const [selectedKyc, setSelectedKyc] = useState(null);
   const [isAddPropertyOpen, setIsAddPropertyOpen] = useState(false);
 
+  // Admin User Profile State
+  const [adminUser, setAdminUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('property_admin_user');
+      return saved ? JSON.parse(saved) : {
+        name: 'Super Admin',
+        email: 'admin@propertyhub.in',
+        role: 'Super Admin',
+        profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
+      };
+    } catch {
+      return {
+        name: 'Super Admin',
+        email: 'admin@propertyhub.in',
+        role: 'Super Admin',
+        profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
+      };
+    }
+  });
+
+  const handleUpdateAdminUser = (updatedData) => {
+    setAdminUser(prev => {
+      const merged = { ...prev, ...updatedData };
+      try {
+        localStorage.setItem('property_admin_user', JSON.stringify(merged));
+      } catch {}
+      return merged;
+    });
+  };
+
   // Authentication Handlers
   const handleLogin = (adminData) => {
     setIsAuthenticated(true);
     sessionStorage.setItem('property_admin_auth', 'true');
     localStorage.setItem('property_admin_auth', 'true');
-    showToast(`Welcome back, ${adminData.name}! Admin session authorized.`, 'success');
+    if (adminData) {
+      handleUpdateAdminUser(adminData);
+    }
+    showToast(`Welcome back, ${adminData?.name || 'Admin'}! Admin session authorized.`, 'success');
   };
 
   const handleLogout = async () => {
@@ -205,6 +239,16 @@ export default function App() {
         }
       } catch (err) {
         console.info('[Live Sync] Using initial roommate fallback:', err.message);
+      }
+
+      // 9. Fetch Admin Profile
+      try {
+        const meRes = await api.get('/auth/me');
+        if (isMounted && meRes?.success && meRes?.data) {
+          handleUpdateAdminUser(meRes.data);
+        }
+      } catch (meErr) {
+        console.info('[Live Sync] Admin profile fetch fallback:', meErr.message);
       }
     }
 
@@ -437,6 +481,29 @@ export default function App() {
     }
   };
 
+
+  const handleUpdateUser = async (id, updatedFields) => {
+    setUsers(prev => prev.map(u => (u.id === id || u.customId === id) ? { ...u, ...updatedFields } : u));
+    showToast('User record updated.', 'success');
+
+    try {
+      await api.patch(`/users/${id}`, updatedFields);
+    } catch (err) {
+      console.warn('[API] User update failed on backend:', err.message);
+    }
+  };
+
+  const handleDeleteUser = async (id) => {
+    setUsers(prev => prev.filter(u => u.id !== id && u.customId !== id));
+    showToast('User record removed.', 'info');
+
+    try {
+      await api.delete(`/users/${id}`);
+    } catch (err) {
+      console.warn('[API] User delete failed on backend:', err.message);
+    }
+  };
+
   const pendingKycCount = owners.filter(o => o.kycStatus === 'Pending').length;
   const pendingPropsCount = properties.filter(p => p.status === 'Pending Verification').length;
   const openTicketsCount = tickets.filter(t => t.status !== 'Resolved').length;
@@ -498,6 +565,7 @@ export default function App() {
         isOpenMobile={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
         onLogout={handleLogout}
+        adminUser={adminUser}
       />
 
       {/* Main Layout Area */}
@@ -523,6 +591,8 @@ export default function App() {
           onSelectProperty={(prop) => setSelectedProperty(prop)}
           onSelectKyc={(owner) => setSelectedKyc(owner)}
           onLogout={handleLogout}
+          adminUser={adminUser}
+          onUpdateAdminUser={handleUpdateAdminUser}
         />
 
         <main className="flex-1 p-3 sm:p-5 min-h-[calc(100vh-62px)] flex flex-col">
@@ -543,6 +613,8 @@ export default function App() {
               <UserManagement 
                 users={users}
                 onToggleBlockUser={handleToggleBlockUser}
+                onUpdateUser={handleUpdateUser}
+                onDeleteUser={handleDeleteUser}
                 activeSubPage={activeSubPage}
               />
             )}

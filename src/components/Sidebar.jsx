@@ -36,7 +36,8 @@ export default function Sidebar({
   isCollapsed = false,
   isOpenMobile = false,
   onCloseMobile,
-  onLogout
+  onLogout,
+  adminUser
 }) {
   // Modules & Sub-pages mapped directly from the purple AdminPanel poster
   const menuConfig = [
@@ -343,14 +344,14 @@ export default function Sidebar({
       <div className={`p-2.5 px-3.5 border-t border-[#2e2a72] bg-black/30 flex items-center justify-between shrink-0 ${isCollapsed ? 'justify-center' : ''}`}>
         <div className={`flex items-center gap-2 ${isCollapsed ? 'justify-center' : ''}`}>
           <img 
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" 
-            alt="Super Admin" 
+            src={adminUser?.profileImage || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"} 
+            alt={adminUser?.name || "Super Admin"} 
             className="w-7.5 h-7.5 rounded-[2px] border border-indigo-500 object-cover"
           />
           {!isCollapsed && (
             <div>
-              <h4 className="text-xs font-semibold text-white leading-tight">Aarav Singhania</h4>
-              <p className="text-[10px] text-slate-400">Super Administrator</p>
+              <h4 className="text-xs font-semibold text-white leading-tight">{adminUser?.name || 'Super Admin'}</h4>
+              <p className="text-[10px] text-slate-400">{adminUser?.role || 'Super Administrator'}</p>
             </div>
           )}
         </div>
