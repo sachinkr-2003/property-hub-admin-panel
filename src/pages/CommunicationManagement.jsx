@@ -153,11 +153,12 @@ export default function CommunicationManagement({ activeSubPage = 'support_ticke
 
   const filteredTickets = tickets.filter(t => {
     const matchesFilter = ticketFilter === 'All' ? true : t.status === ticketFilter;
+    const term = ticketSearch.toLowerCase();
     const matchesSearch = 
-      t.from.toLowerCase().includes(ticketSearch.toLowerCase()) ||
-      t.subject.toLowerCase().includes(ticketSearch.toLowerCase()) ||
-      t.id.toLowerCase().includes(ticketSearch.toLowerCase()) ||
-      t.phone.includes(ticketSearch);
+      (t.from || t.userName || t.name || '').toLowerCase().includes(term) ||
+      (t.subject || t.issue || t.message || '').toLowerCase().includes(term) ||
+      (t.id || t.customId || '').toLowerCase().includes(term) ||
+      (t.phone || t.userPhone || '').includes(term);
     return matchesFilter && matchesSearch;
   });
 

@@ -90,15 +90,15 @@ export default function OwnerManagement({
         ? true 
         : filterKyc === 'Blocked' 
           ? o.status === 'Blocked' 
-          : o.kycStatus.toLowerCase() === filterKyc.toLowerCase();
+          : (o.kycStatus || 'Pending').toLowerCase() === filterKyc.toLowerCase();
 
-      const matchesRole = filterRole === 'All' ? true : o.role.toLowerCase().includes(filterRole.toLowerCase());
+      const matchesRole = filterRole === 'All' ? true : (o.role || 'Direct Owner').toLowerCase().includes(filterRole.toLowerCase());
 
       const matchesSearch = 
-        o.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        o.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        o.mobile.includes(searchTerm) ||
-        o.id.toLowerCase().includes(searchTerm.toLowerCase());
+        (o.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (o.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (o.mobile || '').includes(searchTerm) ||
+        (o.id || '').toLowerCase().includes(searchTerm.toLowerCase());
 
       return matchesSub && matchesKyc && matchesRole && matchesSearch;
     }).sort((a, b) => {

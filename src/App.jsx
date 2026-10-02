@@ -28,10 +28,9 @@ import {
 import { showToast, confirmDelete } from './utils/alerts';
 
 export default function App() {
-  // Authentication session state
+  // Authentication session state: Must be explicitly logged in per session
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const saved = localStorage.getItem('property_admin_auth');
-    return saved !== null ? saved === 'true' : true;
+    return sessionStorage.getItem('property_admin_auth') === 'true';
   });
 
   // Navigation state: parent module + specific sub-page
@@ -71,6 +70,7 @@ export default function App() {
   // Authentication Handlers
   const handleLogin = (adminData) => {
     setIsAuthenticated(true);
+    sessionStorage.setItem('property_admin_auth', 'true');
     localStorage.setItem('property_admin_auth', 'true');
     showToast(`Welcome back, ${adminData.name}! Admin session authorized.`, 'success');
   };
@@ -82,7 +82,9 @@ export default function App() {
     );
     if (confirmed) {
       setIsAuthenticated(false);
-      localStorage.setItem('property_admin_auth', 'false');
+      sessionStorage.removeItem('property_admin_auth');
+      localStorage.removeItem('property_admin_auth');
+      localStorage.removeItem('property_admin_token');
       showToast('You have been signed out securely.', 'info');
     }
   };
@@ -215,7 +217,7 @@ export default function App() {
 
   // Property Handlers (Optimistic UI + Live Backend Sync)
   const handleUpdatePropertyStatus = async (id, newStatus) => {
-    setProperties(prev => prev.map(p => (p.id === id || p.customId === id) ? { ...p, status: newStatus } : p));
+    setProperties(prev => prev.map(p => (p.id === id || p.customId === id) ? { ...p, status: newStatus, isVerified: newStatus === 'Active' } : p));
     if (newStatus === 'Active') {
       showToast('Property listing approved and saved live in MongoDB!', 'success');
     } else if (newStatus === 'Rejected') {

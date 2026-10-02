@@ -50,14 +50,14 @@ export default function ServicesManagement({ services, onToggleServiceStatus, ac
   // Filtering & Sorting
   const filteredServices = useMemo(() => {
     return services.filter((s) => {
-      const matchesCat = filterCat === 'All' || s.category.toLowerCase().includes(filterCat.toLowerCase());
+      const matchesCat = filterCat === 'All' || (s.category || '').toLowerCase().includes(filterCat.toLowerCase());
       const matchesStatus = filterStatus === 'All' || (filterStatus === 'Active' ? s.status === 'Active' : s.status !== 'Active');
       const matchesSearch = 
-        s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.phone.includes(searchTerm) ||
-        s.id.toLowerCase().includes(searchTerm.toLowerCase());
+        (s.name || s.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (s.provider || s.vendor || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (s.category || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (s.phone || '').includes(searchTerm) ||
+        (s.id || s.customId || '').toLowerCase().includes(searchTerm.toLowerCase());
       return matchesCat && matchesStatus && matchesSearch;
     }).sort((a, b) => {
       let valA = a[sortField];

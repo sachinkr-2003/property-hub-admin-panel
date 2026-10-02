@@ -103,21 +103,22 @@ export default function FinanceManagement({ activeSubPage = 'transactions' }) {
 
   // Filtered & Sorted Transactions
   const filteredTransactions = useMemo(() => {
+    const term = searchTerm.toLowerCase();
     return transactions.filter(t => {
       const matchesStatus = statusFilter === 'All' ? true : t.status === statusFilter;
       const matchesSearch = 
-        t.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.purpose.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.paymentId.toLowerCase().includes(searchTerm.toLowerCase());
+        (t.userName || t.user || '').toLowerCase().includes(term) ||
+        (t.purpose || '').toLowerCase().includes(term) ||
+        (t.id || t.customId || '').toLowerCase().includes(term) ||
+        (t.paymentId || '').toLowerCase().includes(term);
       return matchesStatus && matchesSearch;
     }).sort((a, b) => {
       let valA = a[sortField];
       let valB = b[sortField];
       if (typeof valA === 'string') {
-        return sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        return sortOrder === 'asc' ? (valA || '').localeCompare(valB || '') : (valB || '').localeCompare(valA || '');
       }
-      return sortOrder === 'asc' ? (valA - valB) : (valB - valA);
+      return sortOrder === 'asc' ? ((valA || 0) - (valB || 0)) : ((valB || 0) - (valA || 0));
     });
   }, [transactions, searchTerm, statusFilter, sortField, sortOrder]);
 

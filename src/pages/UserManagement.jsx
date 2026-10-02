@@ -96,19 +96,19 @@ export default function UserManagement({ users, onToggleBlockUser, activeSubPage
       const matchesStatus = filterStatus === 'All' 
         ? true 
         : filterStatus === 'Reported' 
-          ? u.reportsCount > 0 
-          : u.status.toLowerCase() === filterStatus.toLowerCase();
+          ? (u.reportsCount || 0) > 0 
+          : (u.status || 'Active').toLowerCase() === filterStatus.toLowerCase();
 
       const matchesRole = filterRole === 'All'
         ? true
-        : u.role.toLowerCase().includes(filterRole.toLowerCase());
+        : (u.role || 'Tenant').toLowerCase().includes(filterRole.toLowerCase());
 
       const matchesSearch = 
-        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.mobile.includes(searchTerm) ||
-        u.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.locality.toLowerCase().includes(searchTerm.toLowerCase());
+        (u.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (u.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (u.mobile || '').includes(searchTerm) ||
+        (u.id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (u.locality || '').toLowerCase().includes(searchTerm.toLowerCase());
 
       return matchesSub && matchesStatus && matchesRole && matchesSearch;
     }).sort((a, b) => {
@@ -247,8 +247,8 @@ export default function UserManagement({ users, onToggleBlockUser, activeSubPage
                 }`}
               >
                 <img 
-                  src={u.profileImage} 
-                  alt={u.name} 
+                  src={u.profileImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'} 
+                  alt={u.name || 'User'} 
                   className="w-8 h-8 rounded-[2px] object-cover border border-slate-300"
                 />
                 <div className="flex-1 min-w-0">
@@ -279,8 +279,8 @@ export default function UserManagement({ users, onToggleBlockUser, activeSubPage
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3.5 flex-wrap">
                     <img 
-                      src={selectedUser.profileImage} 
-                      alt={selectedUser.name} 
+                      src={selectedUser.profileImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'} 
+                      alt={selectedUser.name || 'User'} 
                       className="w-16 h-16 rounded-[2px] object-cover border border-slate-300 shadow-xs"
                     />
                     <div>
@@ -662,13 +662,13 @@ export default function UserManagement({ users, onToggleBlockUser, activeSubPage
                     <td>
                       <div className="flex items-center gap-2.5">
                         <img 
-                          src={u.profileImage} 
-                          alt={u.name} 
+                          src={u.profileImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'} 
+                          alt={u.name || 'User'} 
                           className="w-8 h-8 rounded-[2px] object-cover border border-slate-300"
                         />
                         <div>
-                          <div className="font-bold text-xs text-slate-800">{u.name}</div>
-                          <div className="text-[11px] text-slate-500 font-mono">{u.email}</div>
+                          <div className="font-bold text-xs text-slate-800">{u.name || 'User'}</div>
+                          <div className="text-[11px] text-slate-500 font-mono">{u.email || u.mobile || 'Registered'}</div>
                         </div>
                       </div>
                     </td>

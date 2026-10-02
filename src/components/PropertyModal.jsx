@@ -21,8 +21,15 @@ export default function PropertyModal({ property, onClose, onUpdateStatus, onTog
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
 
+  const resolveImgUrl = (url) => {
+    if (!url) return 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    if (url.startsWith('/')) return `https://property-hub-backend-j0ea.onrender.com${url}`;
+    return `https://property-hub-backend-j0ea.onrender.com/${url}`;
+  };
+
   const images = property.images && property.images.length > 0 
-    ? property.images 
+    ? property.images.map(resolveImgUrl) 
     : ['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80'];
 
   const handleNextImage = () => {

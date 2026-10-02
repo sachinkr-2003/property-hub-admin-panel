@@ -15,10 +15,10 @@ import api from '../services/api';
 
 export default function LoginPage({ onLogin }) {
   // Login fields
-  const [email, setEmail] = useState('admin@propertyhub.in');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Loading indicator
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +48,10 @@ export default function LoginPage({ onLogin }) {
         if (res.data?.token) {
           localStorage.setItem('property_admin_token', res.data.token);
         }
-        localStorage.setItem('property_admin_auth', 'true');
+        sessionStorage.setItem('property_admin_auth', 'true');
+        if (rememberMe) {
+          localStorage.setItem('property_admin_auth', 'true');
+        }
         onLogin(res.data.admin || { name: 'Super Admin', email: cleanInput, role: 'Super Admin' });
         showToast('Welcome back! Admin login successful.', 'success');
         return;
@@ -63,7 +66,10 @@ export default function LoginPage({ onLogin }) {
           email: 'admin@propertyhub.in',
           role: 'Super Admin'
         };
-        localStorage.setItem('property_admin_auth', 'true');
+        sessionStorage.setItem('property_admin_auth', 'true');
+        if (rememberMe) {
+          localStorage.setItem('property_admin_auth', 'true');
+        }
         localStorage.setItem('property_admin_token', 'master_admin_session_active');
         onLogin(fallbackAdmin);
         showToast('Master Admin verified successfully!', 'success');
@@ -78,7 +84,10 @@ export default function LoginPage({ onLogin }) {
     // Fallback check if response succeeded without error but not caught
     if (isMasterAuth) {
       setIsLoading(false);
-      localStorage.setItem('property_admin_auth', 'true');
+      sessionStorage.setItem('property_admin_auth', 'true');
+      if (rememberMe) {
+        localStorage.setItem('property_admin_auth', 'true');
+      }
       onLogin({ name: 'Super Admin', email: 'admin@propertyhub.in', role: 'Super Admin' });
       showToast('Master Admin verified successfully!', 'success');
     } else {

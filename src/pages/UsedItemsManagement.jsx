@@ -56,13 +56,13 @@ export default function UsedItemsManagement({
       if (filterReported === 'Reported' || activeSubPage === 'reported_items') matchesTab = item.reported;
       if (filterReported === 'Active') matchesTab = !item.reported && item.status === 'Active';
 
-      const matchesCat = filterCategory === 'All' || item.category.toLowerCase().includes(filterCategory.toLowerCase());
+      const matchesCat = filterCategory === 'All' || (item.category || '').toLowerCase().includes(filterCategory.toLowerCase());
 
       const matchesSearch = 
-        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.sellerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.sellerName || item.ownerName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.category || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.id || item.customId || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.locality && item.locality.toLowerCase().includes(searchTerm.toLowerCase()));
 
       return matchesTab && matchesCat && matchesSearch;
@@ -70,9 +70,9 @@ export default function UsedItemsManagement({
       let valA = a[sortField];
       let valB = b[sortField];
       if (typeof valA === 'string') {
-        return sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        return sortOrder === 'asc' ? (valA || '').localeCompare(valB || '') : (valB || '').localeCompare(valA || '');
       }
-      return sortOrder === 'asc' ? (valA - valB) : (valB - valA);
+      return sortOrder === 'asc' ? ((valA || 0) - (valB || 0)) : ((valB || 0) - (valA || 0));
     });
   }, [usedItems, filterReported, filterCategory, activeSubPage, searchTerm, sortField, sortOrder]);
 

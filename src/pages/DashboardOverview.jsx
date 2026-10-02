@@ -96,10 +96,10 @@ export default function DashboardOverview({
                       <td style={{ fontWeight: 600 }}>{owner.name}</td>
                       <td style={{ fontSize: '0.78rem' }}>{owner.mobile}</td>
                       <td>
-                        <span className="badge-pill badge-blue">{owner.documents.pan ? `PAN: ${owner.documents.pan}` : 'Aadhaar Card'}</span>
+                        <span className="badge-pill badge-blue">{owner.documents?.pan ? `PAN: ${owner.documents.pan}` : (owner.documents?.aadhaar ? 'Aadhaar Card' : 'Govt ID Proof')}</span>
                       </td>
                       <td style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
-                        {owner.documents.registry || 'Standard Deed Scan'}
+                        {owner.documents?.registry || 'Standard Deed Scan'}
                       </td>
                       <td>
                         <span className="badge-pill badge-yellow">Pending Review</span>
@@ -633,8 +633,8 @@ export default function DashboardOverview({
                     ID: o.id,
                     Name: o.name,
                     Mobile: o.mobile,
-                    Document: o.documents.pan ? `PAN: ${o.documents.pan}` : 'Aadhaar',
-                    Deed_Proof: o.documents.registry,
+                    Document: o.documents?.pan ? `PAN: ${o.documents.pan}` : 'Aadhaar / ID',
+                    Deed_Proof: o.documents?.registry || 'Standard Deed',
                     Status: o.kycStatus
                   })));
                   showToast('Pending Landlords KYC queue exported to CSV.', 'success');
@@ -669,7 +669,7 @@ export default function DashboardOverview({
                   <tr key={owner.id}>
                     <td style={{ fontWeight: 600 }}>{owner.name}</td>
                     <td style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>{owner.mobile}</td>
-                    <td style={{ fontSize: '0.74rem' }}>{owner.documents.registry}</td>
+                    <td style={{ fontSize: '0.74rem' }}>{owner.documents?.registry || 'Deed Scan'}</td>
                     <td>
                       <span className="badge-pill badge-yellow">Pending Review</span>
                     </td>

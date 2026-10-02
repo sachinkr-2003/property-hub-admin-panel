@@ -27,6 +27,13 @@ import { initialDuplicatePairs } from '../data/mockData';
 import { exportToCsv } from '../utils/exportCsv';
 import TablePagination from '../components/TablePagination';
 
+const resolveImgUrl = (url) => {
+  if (!url) return 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/')) return `https://property-hub-backend-j0ea.onrender.com${url}`;
+  return `https://property-hub-backend-j0ea.onrender.com/${url}`;
+};
+
 export default function PropertyManagement({ 
   properties, 
   onSelectProperty, 
@@ -66,12 +73,12 @@ export default function PropertyManagement({
     if (activeSubTab === 'suspended') matchesTab = p.status === 'Suspended';
     if (activeSubTab === 'docs') matchesTab = true;
 
-    const matchesType = typeFilter === 'All' || p.type.toLowerCase() === typeFilter.toLowerCase();
+    const matchesType = typeFilter === 'All' || (p.type || '').toLowerCase() === typeFilter.toLowerCase();
     const matchesSearch = 
-      p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.locality.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.id.toLowerCase().includes(searchTerm.toLowerCase());
+      (p.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.locality || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.ownerName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.id || '').toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesTab && matchesType && matchesSearch;
   });
@@ -80,12 +87,12 @@ export default function PropertyManagement({
     let aVal = a[sortField];
     let bVal = b[sortField];
     if (sortField === 'price') {
-      return (a.price - b.price) * (sortOrder === 'asc' ? 1 : -1);
+      return ((a.price || 0) - (b.price || 0)) * (sortOrder === 'asc' ? 1 : -1);
     }
     if (typeof aVal === 'string') {
-      return aVal.localeCompare(bVal) * (sortOrder === 'asc' ? 1 : -1);
+      return (aVal || '').localeCompare(bVal || '') * (sortOrder === 'asc' ? 1 : -1);
     }
-    return (aVal - bVal) * (sortOrder === 'asc' ? 1 : -1);
+    return ((aVal || 0) - (bVal || 0)) * (sortOrder === 'asc' ? 1 : -1);
   });
 
   const paginated = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -683,7 +690,7 @@ export default function PropertyManagement({
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <img 
-                          src={p.images[0]} 
+                          src={resolveImgUrl(p.images?.[0])} 
                           alt={p.title} 
                           style={{ width: '44px', height: '34px', borderRadius: 'var(--radius-square)', objectFit: 'cover' }}
                         />
@@ -810,7 +817,7 @@ export default function PropertyManagement({
             <div key={p.id} className="classic-card" style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
               <div style={{ height: '160px', position: 'relative' }}>
                 <img 
-                  src={p.images[0]} 
+                  src={resolveImgUrl(p.images?.[0])} 
                   alt={p.title} 
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                 />
