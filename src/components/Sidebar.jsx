@@ -64,6 +64,8 @@ export default function Sidebar({
         { id: 'suspended_users', label: 'Suspended Users' }
       ]
     },
+    // [TEMPORARILY COMMENTED OUT - CAN BE RE-ENABLED LATER]
+    /*
     {
       id: 'roommates',
       label: 'Roommate Finder (3)',
@@ -74,6 +76,7 @@ export default function Sidebar({
         { id: 'female_roommates', label: 'Female Flatmates' }
       ]
     },
+    */
     {
       id: 'owners',
       label: 'Owner Management (6)',
@@ -134,6 +137,19 @@ export default function Sidebar({
       ]
     },
     {
+      id: 'communication',
+      label: 'Communication & Support (6)',
+      icon: MessageSquare,
+      alertBadge: openTicketsCount > 0 ? `${openTicketsCount} Open` : null,
+      subPages: [
+        { id: 'push_notifications', label: 'Push Notifications' },
+        { id: 'support_tickets', label: 'Complaints & Tickets' },
+        { id: 'banners_ads', label: 'Banners / Ads CMS' }
+      ]
+    },
+    // [TEMPORARILY COMMENTED OUT - CAN BE RE-ENABLED LATER]
+    /*
+    {
       id: 'finance',
       label: 'Finance (7)',
       icon: CreditCard,
@@ -143,17 +159,6 @@ export default function Sidebar({
         { id: 'featured_boosts', label: 'Featured Boost Listings' },
         { id: 'earning_models', label: '10 Earning Channels' },
         { id: 'refunds', label: 'Refund Management' }
-      ]
-    },
-    {
-      id: 'communication',
-      label: 'Communication (6)',
-      icon: MessageSquare,
-      alertBadge: openTicketsCount > 0 ? `${openTicketsCount} Open` : null,
-      subPages: [
-        { id: 'push_notifications', label: 'Push Notifications' },
-        { id: 'support_tickets', label: 'Complaints & Tickets' },
-        { id: 'banners_ads', label: 'Banners / Ads CMS' }
       ]
     },
     {
@@ -189,6 +194,7 @@ export default function Sidebar({
         { id: 'password_reset', label: 'Password & Security' }
       ]
     }
+    */
   ];
 
   return (
