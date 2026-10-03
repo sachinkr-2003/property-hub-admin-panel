@@ -144,122 +144,143 @@ export default function App() {
     });
   };
 
+  const [isSyncing, setIsSyncing] = useState(false);
+
   // Live Data Synchronization with Backend MongoDB
-  useEffect(() => {
-    let isMounted = true;
+  const fetchAllData = async (silent = false) => {
+    if (!silent) setIsSyncing(true);
 
-    async function fetchInitialData() {
-      // 1. Fetch Real Properties from MongoDB
-      try {
-        const propRes = await api.get('/properties');
-        if (isMounted && propRes?.data && Array.isArray(propRes.data) && propRes.data.length > 0) {
-          setProperties(propRes.data.map(p => ({ ...p, id: p.customId || p.id || p._id })));
-          setMetrics(prev => ({
-            ...prev,
-            totalProperties: propRes.data.length,
-            verifiedListings: propRes.data.filter(p => p.isVerified).length,
-            pendingReview: propRes.data.filter(p => p.status === 'Pending Verification').length,
-          }));
-        }
-      } catch (err) {
-        console.info('[Live Sync] Using initial property fallback:', err.message);
+    // 1. Fetch Real Properties from MongoDB
+    try {
+      const propRes = await api.get('/properties');
+      if (propRes?.data && Array.isArray(propRes.data) && propRes.data.length > 0) {
+        const live = propRes.data.map(p => ({ ...p, id: p.customId || p.id || p._id, isLive: true }));
+        const liveIds = new Set(live.map(p => p.id));
+        const merged = [...live, ...(initialProperties || []).filter(p => !liveIds.has(p.id))];
+        setProperties(merged);
+        setMetrics(prev => ({
+          ...prev,
+          totalProperties: merged.length,
+          verifiedListings: merged.filter(p => p.isVerified).length,
+          pendingReview: merged.filter(p => p.status === 'Pending Verification').length,
+        }));
       }
-
-      // 2. Fetch Real Owners & KYC Dossiers from MongoDB
-      try {
-        const ownerRes = await api.get('/kyc/owners');
-        if (isMounted && ownerRes?.data && Array.isArray(ownerRes.data) && ownerRes.data.length > 0) {
-          setOwners(ownerRes.data.map(o => ({ ...o, id: o.customId || o.id || o._id })));
-          setMetrics(prev => ({
-            ...prev,
-            registeredOwners: ownerRes.data.length,
-            kycPending: ownerRes.data.filter(o => o.kycStatus === 'Pending').length,
-          }));
-        }
-      } catch (err) {
-        console.info('[Live Sync] Using initial owner fallback:', err.message);
-      }
-
-      // 3. Fetch Real Registered Users from MongoDB
-      try {
-        const userRes = await api.get('/users');
-        if (isMounted && userRes?.data && Array.isArray(userRes.data) && userRes.data.length > 0) {
-          setUsers(userRes.data.map(u => ({ ...u, id: u.customId || u.id || u._id })));
-          setMetrics(prev => ({
-            ...prev,
-            totalUsers: userRes.data.length,
-            activeUsers: userRes.data.filter(u => u.status === 'Active').length,
-          }));
-        }
-      } catch (err) {
-        console.info('[Live Sync] Using initial user fallback:', err.message);
-      }
-
-      // 4. Fetch Support Tickets from MongoDB
-      try {
-        const ticketRes = await api.get('/communication/tickets');
-        if (isMounted && ticketRes?.data && Array.isArray(ticketRes.data) && ticketRes.data.length > 0) {
-          setTickets(ticketRes.data.map(t => ({ ...t, id: t.customId || t.id || t._id })));
-        }
-      } catch (err) {
-        console.info('[Live Sync] Using initial ticket fallback:', err.message);
-      }
-
-      // 5. Fetch Services Providers from MongoDB
-      try {
-        const srvRes = await api.get('/services');
-        if (isMounted && srvRes?.data && Array.isArray(srvRes.data) && srvRes.data.length > 0) {
-          setServices(srvRes.data.map(s => ({ ...s, id: s.customId || s.id || s._id })));
-        }
-      } catch (err) {
-        console.info('[Live Sync] Using initial services fallback:', err.message);
-      }
-
-      // 6. Fetch Used Marketplace Items from MongoDB
-      try {
-        const itemRes = await api.get('/used-items');
-        if (isMounted && itemRes?.data && Array.isArray(itemRes.data) && itemRes.data.length > 0) {
-          setUsedItems(itemRes.data.map(i => ({ ...i, id: i.customId || i.id || i._id })));
-        }
-      } catch (err) {
-        console.info('[Live Sync] Using initial used items fallback:', err.message);
-      }
-
-      // 7. Fetch Site Visits & Leads from MongoDB
-      try {
-        const visitRes = await api.get('/visits');
-        if (isMounted && visitRes?.data && Array.isArray(visitRes.data) && visitRes.data.length > 0) {
-          setVisits(visitRes.data.map(v => ({ ...v, id: v.customId || v.id || v._id })));
-        }
-      } catch (err) {
-        console.info('[Live Sync] Using initial visit fallback:', err.message);
-      }
-
-      // 8. Fetch Roommate Requests from MongoDB
-      try {
-        const rmRes = await api.get('/roommates');
-        if (isMounted && rmRes?.data && Array.isArray(rmRes.data) && rmRes.data.length > 0) {
-          setRoommates(rmRes.data.map(r => ({ ...r, id: r.customId || r.id || r._id })));
-        }
-      } catch (err) {
-        console.info('[Live Sync] Using initial roommate fallback:', err.message);
-      }
-
-      // 9. Fetch Admin Profile
-      try {
-        const meRes = await api.get('/auth/me');
-        if (isMounted && meRes?.success && meRes?.data) {
-          handleUpdateAdminUser(meRes.data);
-        }
-      } catch (meErr) {
-        console.info('[Live Sync] Admin profile fetch fallback:', meErr.message);
-      }
+    } catch (err) {
+      console.info('[Live Sync] Using initial property fallback:', err.message);
     }
 
-    fetchInitialData();
+    // 2. Fetch Real Owners & KYC Dossiers from MongoDB
+    try {
+      const ownerRes = await api.get('/kyc/owners');
+      if (ownerRes?.data && Array.isArray(ownerRes.data) && ownerRes.data.length > 0) {
+        const live = ownerRes.data.map(o => ({ ...o, id: o.customId || o.id || o._id, isLive: true }));
+        const liveIds = new Set(live.map(o => o.id));
+        const merged = [...live, ...(initialOwners || []).filter(o => !liveIds.has(o.id))];
+        setOwners(merged);
+        setMetrics(prev => ({
+          ...prev,
+          registeredOwners: merged.length,
+          kycPending: merged.filter(o => o.kycStatus === 'Pending').length,
+        }));
+      }
+    } catch (err) {
+      console.info('[Live Sync] Using initial owner fallback:', err.message);
+    }
+
+    // 3. Fetch Real Registered Users from MongoDB
+    try {
+      const userRes = await api.get('/users');
+      if (userRes?.data && Array.isArray(userRes.data) && userRes.data.length > 0) {
+        const live = userRes.data.map(u => ({ ...u, id: u.customId || u.id || u._id, isLive: true }));
+        const liveIds = new Set(live.map(u => u.id));
+        const merged = [...live, ...(initialUsers || []).filter(u => !liveIds.has(u.id))];
+        setUsers(merged);
+        setMetrics(prev => ({
+          ...prev,
+          totalUsers: merged.length,
+          activeUsers: merged.filter(u => u.status === 'Active').length,
+        }));
+      }
+    } catch (err) {
+      console.info('[Live Sync] Using initial user fallback:', err.message);
+    }
+
+    // 4. Fetch Support Tickets from MongoDB
+    try {
+      const ticketRes = await api.get('/communication/tickets');
+      if (ticketRes?.data && Array.isArray(ticketRes.data) && ticketRes.data.length > 0) {
+        setTickets(ticketRes.data.map(t => ({ ...t, id: t.customId || t.id || t._id })));
+      }
+    } catch (err) {
+      console.info('[Live Sync] Using initial ticket fallback:', err.message);
+    }
+
+    // 5. Fetch Services Providers from MongoDB
+    try {
+      const srvRes = await api.get('/services');
+      if (srvRes?.data && Array.isArray(srvRes.data) && srvRes.data.length > 0) {
+        setServices(srvRes.data.map(s => ({ ...s, id: s.customId || s.id || s._id })));
+      }
+    } catch (err) {
+      console.info('[Live Sync] Using initial services fallback:', err.message);
+    }
+
+    // 6. Fetch Used Marketplace Items from MongoDB
+    try {
+      const itemRes = await api.get('/used-items');
+      if (itemRes?.data && Array.isArray(itemRes.data) && itemRes.data.length > 0) {
+        setUsedItems(itemRes.data.map(i => ({ ...i, id: i.customId || i.id || i._id })));
+      }
+    } catch (err) {
+      console.info('[Live Sync] Using initial used items fallback:', err.message);
+    }
+
+    // 7. Fetch Site Visits & Leads from MongoDB
+    try {
+      const visitRes = await api.get('/visits');
+      if (visitRes?.data && Array.isArray(visitRes.data) && visitRes.data.length > 0) {
+        setVisits(visitRes.data.map(v => ({ ...v, id: v.customId || v.id || v._id })));
+      }
+    } catch (err) {
+      console.info('[Live Sync] Using initial visit fallback:', err.message);
+    }
+
+    // 8. Fetch Roommate Requests from MongoDB
+    try {
+      const rmRes = await api.get('/roommates');
+      if (rmRes?.data && Array.isArray(rmRes.data) && rmRes.data.length > 0) {
+        setRoommates(rmRes.data.map(r => ({ ...r, id: r.customId || r.id || r._id })));
+      }
+    } catch (err) {
+      console.info('[Live Sync] Using initial roommate fallback:', err.message);
+    }
+
+    // 9. Fetch Admin Profile
+    try {
+      const token = localStorage.getItem('property_admin_token');
+      if (token) {
+        const meRes = await api.get('/auth/me');
+        if (meRes?.success && meRes?.data) {
+          handleUpdateAdminUser(meRes.data);
+        }
+      }
+    } catch (meErr) {
+      console.info('[Live Sync] Admin profile fetch fallback:', meErr.message);
+    }
+
+    if (!silent) setIsSyncing(false);
+  };
+
+  useEffect(() => {
+    fetchAllData(false);
+
+    // Auto-polling every 8 seconds so app submissions appear automatically without manual refresh
+    const pollTimer = setInterval(() => {
+      fetchAllData(true);
+    }, 8000);
 
     return () => {
-      isMounted = false;
+      clearInterval(pollTimer);
     };
   }, []);
 
@@ -597,6 +618,8 @@ export default function App() {
           onLogout={handleLogout}
           adminUser={adminUser}
           onUpdateAdminUser={handleUpdateAdminUser}
+          onRefresh={() => fetchAllData(false)}
+          isSyncing={isSyncing}
         />
 
         <main className="flex-1 p-3 sm:p-5 min-h-[calc(100vh-62px)] flex flex-col">

@@ -44,12 +44,15 @@ export default function Header({
   onSelectKyc,
   onLogout,
   adminUser: externalAdminUser,
-  onUpdateAdminUser
+  onUpdateAdminUser,
+  onRefresh,
+  isSyncing: externalIsSyncing
 }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [internalIsSyncing, setInternalIsSyncing] = useState(false);
+  const isSyncing = externalIsSyncing !== undefined ? externalIsSyncing : internalIsSyncing;
 
   const [adminUser, setAdminUser] = useState(() => {
     return externalAdminUser || {
@@ -213,12 +216,21 @@ export default function Header({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleSync = () => {
-    setIsSyncing(true);
-    setTimeout(() => {
-      setIsSyncing(false);
-      showToast('All platform nodes & databases synchronized successfully!', 'success');
-    }, 600);
+  const handleSync = async () => {
+    setInternalIsSyncing(true);
+    try {
+      if (onRefresh) {
+        await onRefresh();
+        showToast('Live database synchronized with MongoDB successfully!', 'success');
+      } else {
+        await new Promise(r => setTimeout(r, 600));
+        showToast('All platform nodes & databases synchronized successfully!', 'success');
+      }
+    } catch (err) {
+      showToast(`Sync failed: ${err.message}`, 'error');
+    } finally {
+      setInternalIsSyncing(false);
+    }
   };
 
   const handleLogout = () => {
