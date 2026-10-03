@@ -26,10 +26,12 @@ export default function KycModal({ kycItem, onClose, onApprove, onReject }) {
   const ownerName = kycItem.name || kycItem.ownerName;
   const ownerMobile = kycItem.mobile || kycItem.phone;
   const ownerEmail = kycItem.email;
-  const aadhaar = kycItem.documents?.aadhaar || kycItem.aadhaarNumber || '4521-8890-3412';
-  const pan = kycItem.documents?.pan || kycItem.panNumber || 'ACUPR3498L';
-  const registry = kycItem.documents?.registry || 'LDA Registered Sale Deed (Book 1, Vol 1420)';
+  const aadhaar = kycItem.documents?.aadhaar || kycItem.aadhaarNumber || 'Not Provided';
+  const pan = kycItem.documents?.pan || kycItem.panNumber || 'Not Provided';
+  const registry = kycItem.documents?.registry || 'Not Provided';
   const isVerified = kycItem.kycStatus === 'Verified' || kycItem.status === 'Verified';
+
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://property-hub-backend-j0ea.onrender.com';
 
   const resolveDocUrl = (url) => {
     if (!url || typeof url !== 'string') return '';
@@ -37,8 +39,7 @@ export default function KycModal({ kycItem, onClose, onApprove, onReject }) {
     if (trimmed.startsWith('data:') || trimmed.startsWith('blob:') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
       return trimmed;
     }
-    const base = 'https://property-hub-backend-j0ea.onrender.com';
-    return trimmed.startsWith('/') ? `${base}${trimmed}` : `${base}/${trimmed}`;
+    return trimmed.startsWith('/') ? `${API_BASE}${trimmed}` : `${API_BASE}/${trimmed}`;
   };
 
   const uploadedDocUrl = 
@@ -289,55 +290,16 @@ export default function KycModal({ kycItem, onClose, onApprove, onReject }) {
                   </div>
                 )
               ) : (
-                <div 
-                  className="transition-transform duration-200 shadow-2xl bg-white border border-slate-700 rounded-[2px] overflow-hidden max-w-lg w-full"
-                  style={{ 
-                    transform: `scale(${zoomLevel}) rotate(${rotation}deg)`,
-                    transformOrigin: 'center center'
-                  }}
-                >
-                  {/* Simulated Scanned Document Header */}
-                  <div className="bg-slate-100 border-b border-slate-300 p-2.5 flex items-center justify-between text-[11px]">
-                    <div className="flex items-center gap-1.5 font-bold text-slate-800">
-                      <FileText size={14} className="text-purple-700" />
-                      <span>{currentDoc.title}</span>
-                    </div>
-                    <span className="badge-pill badge-green text-[10px]">{currentDoc.badge}</span>
+                <div className="bg-slate-800 border border-slate-700 rounded-[2px] p-8 max-w-md w-full text-center space-y-3 text-slate-300">
+                  <div className="w-12 h-12 rounded-full bg-slate-700/60 text-amber-400 mx-auto flex items-center justify-center">
+                    <AlertTriangle size={24} />
                   </div>
-
-                  <div className="p-3 bg-white">
-                    <div className="relative border border-dashed border-slate-300 p-3 bg-slate-50 rounded-[2px]">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Issuing Authority</div>
-                          <div className="text-xs font-semibold text-slate-800">{currentDoc.issuer}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Document ID</div>
-                          <div className="text-xs font-mono font-bold text-purple-900 bg-purple-50 px-1.5 py-0.5 border border-purple-200 rounded-[2px]">
-                            {currentDoc.docNumber}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-3 flex items-center gap-3">
-                        <div className="w-16 h-20 bg-slate-200 border border-slate-300 rounded-[2px] flex items-center justify-center text-slate-400 text-[10px] font-mono">
-                          [ID PHOTO]
-                        </div>
-                        <div className="flex-1 text-[11px] space-y-1">
-                          <div><span className="text-slate-500">Holder:</span> <strong className="text-slate-800">{ownerName}</strong></div>
-                          <div><span className="text-slate-500">Category:</span> <span className="text-slate-700">{currentDoc.type}</span></div>
-                          <div><span className="text-slate-500">Audit Status:</span> <span className="text-emerald-700 font-semibold">{currentDoc.status}</span></div>
-                          <div><span className="text-slate-500">Scan Timestamp:</span> <span className="font-mono text-slate-600">{currentDoc.date}</span></div>
-                        </div>
-                      </div>
-
-                      {/* Official Stamp Watermark */}
-                      <div className="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-500">
-                        <span className="font-mono">DIGITALLY SIGNED VIA C-DAC e-GOV GATEWAY</span>
-                        <span className="text-emerald-700 font-bold">● TAMPER-PROOF HASH VALID</span>
-                      </div>
-                    </div>
+                  <h4 className="text-sm font-bold text-white">No {currentDoc.title} Uploaded</h4>
+                  <p className="text-xs text-slate-400">
+                    The landlord has not submitted an image or PDF file for this verification step.
+                  </p>
+                  <div className="text-xs font-mono bg-slate-900 py-1.5 px-3 rounded text-slate-300 border border-slate-700">
+                    Provided ID: {currentDoc.docNumber || 'Not Provided'}
                   </div>
                 </div>
               )}

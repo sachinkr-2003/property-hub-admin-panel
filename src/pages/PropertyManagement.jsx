@@ -29,6 +29,8 @@ import TablePagination from '../components/TablePagination';
 
 const FALLBACK_PROPERTY_IMG = 'https://placehold.co/800x600/f8fafc/64748b?text=No+Photo+Uploaded';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://property-hub-backend-j0ea.onrender.com';
+
 const resolveImgUrl = (url) => {
   if (!url || typeof url !== 'string') return FALLBACK_PROPERTY_IMG;
   const trimmed = url.trim();
@@ -38,8 +40,7 @@ const resolveImgUrl = (url) => {
     return FALLBACK_PROPERTY_IMG;
   }
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-  const base = 'https://property-hub-backend-j0ea.onrender.com';
-  return trimmed.startsWith('/') ? `${base}${trimmed}` : `${base}/${trimmed}`;
+  return trimmed.startsWith('/') ? `${API_BASE}${trimmed}` : `${API_BASE}/${trimmed}`;
 };
 
 export default function PropertyManagement({ 
