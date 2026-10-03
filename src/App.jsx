@@ -23,9 +23,7 @@ import LeadsAndVisits from './pages/LeadsAndVisits';
 import RoommateManagement from './pages/RoommateManagement';
 
 import { 
-  mockDashboardMetrics,
-  initialUsers,
-  initialProperties
+  mockDashboardMetrics
 } from './data/mockData';
 import { showToast, confirmDelete } from './utils/alerts';
 
@@ -46,25 +44,25 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Domain states
-  const [users, setUsers] = useState(initialUsers || []);
+  const [users, setUsers] = useState([]);
   const [owners, setOwners] = useState([]);
-  const [properties, setProperties] = useState(initialProperties || []);
+  const [properties, setProperties] = useState([]);
   const [services, setServices] = useState([]);
   const [usedItems, setUsedItems] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [visits, setVisits] = useState([]);
   const [roommates, setRoommates] = useState([]);
 
-  // Update metrics to reflect initialProperties on first render
+  // Metrics state
   const [metrics, setMetrics] = useState({
     ...mockDashboardMetrics,
-    totalProperties: (initialProperties || []).length,
-    verifiedListings: (initialProperties || []).filter(p => p.isVerified).length,
-    pendingReview: (initialProperties || []).filter(p => p.status === 'Pending Verification').length,
+    totalProperties: 0,
+    verifiedListings: 0,
+    pendingReview: 0,
     registeredOwners: 0,
     kycPending: 0,
-    activeUsers: (initialUsers || []).filter(u => u.status === 'Active').length,
-    totalUsers: (initialUsers || []).length
+    activeUsers: 0,
+    totalUsers: 0
   });
 
   // Modals
@@ -153,56 +151,50 @@ export default function App() {
     // 1. Fetch Real Properties from MongoDB
     try {
       const propRes = await api.get('/properties');
-      if (propRes?.data && Array.isArray(propRes.data) && propRes.data.length > 0) {
+      if (propRes?.data && Array.isArray(propRes.data)) {
         const live = propRes.data.map(p => ({ ...p, id: p.customId || p.id || p._id, isLive: true }));
-        const liveIds = new Set(live.map(p => p.id));
-        const merged = [...live, ...(initialProperties || []).filter(p => !liveIds.has(p.id))];
-        setProperties(merged);
+        setProperties(live);
         setMetrics(prev => ({
           ...prev,
-          totalProperties: merged.length,
-          verifiedListings: merged.filter(p => p.isVerified).length,
-          pendingReview: merged.filter(p => p.status === 'Pending Verification').length,
+          totalProperties: live.length,
+          verifiedListings: live.filter(p => p.isVerified).length,
+          pendingReview: live.filter(p => p.status === 'Pending Verification').length,
         }));
       }
     } catch (err) {
-      console.info('[Live Sync] Using initial property fallback:', err.message);
+      console.info('[Live Sync] Property fetch error:', err.message);
     }
 
     // 2. Fetch Real Owners & KYC Dossiers from MongoDB
     try {
       const ownerRes = await api.get('/kyc/owners');
-      if (ownerRes?.data && Array.isArray(ownerRes.data) && ownerRes.data.length > 0) {
+      if (ownerRes?.data && Array.isArray(ownerRes.data)) {
         const live = ownerRes.data.map(o => ({ ...o, id: o.customId || o.id || o._id, isLive: true }));
-        const liveIds = new Set(live.map(o => o.id));
-        const merged = [...live, ...(initialOwners || []).filter(o => !liveIds.has(o.id))];
-        setOwners(merged);
+        setOwners(live);
         setMetrics(prev => ({
           ...prev,
-          registeredOwners: merged.length,
-          kycPending: merged.filter(o => o.kycStatus === 'Pending').length,
+          registeredOwners: live.length,
+          kycPending: live.filter(o => o.kycStatus === 'Pending').length,
         }));
       }
     } catch (err) {
-      console.info('[Live Sync] Using initial owner fallback:', err.message);
+      console.info('[Live Sync] Owner fetch error:', err.message);
     }
 
     // 3. Fetch Real Registered Users from MongoDB
     try {
       const userRes = await api.get('/users');
-      if (userRes?.data && Array.isArray(userRes.data) && userRes.data.length > 0) {
+      if (userRes?.data && Array.isArray(userRes.data)) {
         const live = userRes.data.map(u => ({ ...u, id: u.customId || u.id || u._id, isLive: true }));
-        const liveIds = new Set(live.map(u => u.id));
-        const merged = [...live, ...(initialUsers || []).filter(u => !liveIds.has(u.id))];
-        setUsers(merged);
+        setUsers(live);
         setMetrics(prev => ({
           ...prev,
-          totalUsers: merged.length,
-          activeUsers: merged.filter(u => u.status === 'Active').length,
+          totalUsers: live.length,
+          activeUsers: live.filter(u => u.status === 'Active').length,
         }));
       }
     } catch (err) {
-      console.info('[Live Sync] Using initial user fallback:', err.message);
+      console.info('[Live Sync] User fetch error:', err.message);
     }
 
     // 4. Fetch Support Tickets from MongoDB
